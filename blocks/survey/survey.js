@@ -1,9 +1,24 @@
-import DA_SDK from 'https://da.live/nx/utils/sdk.js';
-//import { LitElement, html, nothing } from 'da-lit';
 import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 
-// Super Lite components
 import 'https://da.live/nx/public/sl/components.js';
+
+const SURVEY_ANSWERS_KEY = 'survey-answers';
+/** Same key as blocks/form/form.js — intake payload `{ submittedAt, data }` */
+const INTAKE_FORM_STORAGE_KEY = 'intake-form-data';
+const SURVEY_HOOK_URL =
+  'https://hook.fusion.adobe.com/v64d1uyfggdtifqtn2xpp3y2588qpxd7';
+
+function getIntakeEmail() {
+  try {
+    const raw = sessionStorage.getItem(INTAKE_FORM_STORAGE_KEY);
+    if (!raw) return '';
+    const parsed = JSON.parse(raw);
+    const email = parsed?.data?.email;
+    return typeof email === 'string' ? email : '';
+  } catch {
+    return '';
+  }
+}
 
 const sheet = new CSSStyleSheet();
 const cssText = await fetch(new URL('./survey.css', import.meta.url)).then((r) => r.text());
@@ -16,7 +31,8 @@ class Survey extends LitElement {
     questions: { type: Array },
     _currentIndex: { state: true },
     _answers: { state: true },
-    _selected: { state: true },
+    _syncing: { state: true },
+    _syncError: { state: true },
   };
 
   constructor() {
@@ -24,19 +40,87 @@ class Survey extends LitElement {
     this.questions = [];
     this._currentIndex = 0;
     this._answers = {};
-    this._selected = null;
+    this._syncing = false;
+    this._syncError = null;
   }
 
-  _selectOption(letter) {
-    this._selected = letter;
+  updated(changed) {
+    if (changed.has('questions') && this.questions.length > 0) {
+      this._hydrateFromSessionStorage();
+    }
+  }
+
+  _readStoredAnswers() {
+    try {
+      const raw = sessionStorage.getItem(SURVEY_ANSWERS_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * POST { email, answers } to Fusion hook, then persist survey-answers to sessionStorage.
+   * @returns {Promise<boolean>}
+   */
+  async _postAndPersistAnswers(nextAnswers) {
+    const email = getIntakeEmail();
+    try {
+      const res = await fetch(SURVEY_HOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, answers: nextAnswers }),
+      });
+      if (!res.ok) return false;
+      try {
+        sessionStorage.setItem(SURVEY_ANSWERS_KEY, JSON.stringify(nextAnswers));
+      } catch {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** First question index without an answer, or questions.length if all answered. */
+  _indexFromStoredAnswers(answers) {
+    for (let i = 0; i < this.questions.length; i++) {
+      const id = this.questions[i].ID;
+      if (answers[id] === undefined || answers[id] === null || answers[id] === '') {
+        return i;
+      }
+    }
+    return this.questions.length;
+  }
+
+  _hydrateFromSessionStorage() {
+    const stored = this._readStoredAnswers();
+    this._answers = { ...stored };
+    this._currentIndex = this._indexFromStoredAnswers(this._answers);
+  }
+
+  async _selectOption(letter) {
+    if (this._syncing) return;
+    const q = this.questions[this._currentIndex];
+    if (!q) return;
+    const nextAnswers = { ...this._answers, [q.ID]: letter };
+    this._syncError = null;
+    this._syncing = true;
+    const ok = await this._postAndPersistAnswers(nextAnswers);
+    this._syncing = false;
+    if (ok) {
+      this._answers = nextAnswers;
+    } else {
+      this._syncError = 'Could not save your answer. Please try again.';
+    }
   }
 
   _next() {
-    if (!this._selected) return;
     const q = this.questions[this._currentIndex];
-    this._answers = { ...this._answers, [q.ID]: this._selected };
-    sessionStorage.setItem('survey-answers', JSON.stringify(this._answers));
-    this._selected = null;
+    if (!q || !this._answers[q.ID]) return;
     this._currentIndex += 1;
   }
 
@@ -81,9 +165,12 @@ class Survey extends LitElement {
   }
 
   _retake() {
-    sessionStorage.removeItem('survey-answers');
-    this._answers = {};
-    this._currentIndex = 0;
+    try {
+      sessionStorage.clear();
+    } catch {
+      /* ignore */
+    }
+    window.location.reload();
   }
 
   render() {
@@ -103,13 +190,20 @@ class Survey extends LitElement {
           <div class="options-grid">
             ${options.map((letter) => html`
               <button
-                class="option ${this._selected === letter ? 'selected' : ''}"
+                type="button"
+                class="option ${this._answers[q.ID] === letter ? 'selected' : ''}"
+                ?disabled=${this._syncing}
                 @click=${() => this._selectOption(letter)}>
                 ${q[`Option ${letter}`]}
               </button>
             `)}
           </div>
-          <button class="next ${this._selected ? '' : 'disabled'}" @click=${this._next}>Next</button>
+          <button class="next ${this._answers[q.ID] && !this._syncing ? '' : 'disabled'}" @click=${this._next}>
+            Next
+          </button>
+          ${this._syncError
+            ? html`<p class="survey-sync-error">${this._syncError}</p>`
+            : nothing}
         </div>
         <div class="dots">
           ${this.questions.map((_, i) => html`

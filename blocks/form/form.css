@@ -1,237 +1,289 @@
-.form [aria-hidden='true'] {
-  display: none;
-}
-
-.form input,
-.form textarea,
-.form select,
-.form button {
-  box-sizing: border-box;
+:host {
   display: block;
-  max-width: 100%;
-  font: inherit;
+  flex: 1;
+  min-height: 0;
 }
 
-.form input,
-.form textarea,
-.form select {
-  scroll-margin: 1em;
-  width: 100%;
-  border: 1px solid var(--dark-color);
-  border-radius: 4px;
-  padding: 0.5em 0.75em;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-size: var(--body-font-size-s);
-}
-
-.form textarea {
-  resize: vertical;
-}
-
-.form fieldset {
-  appearance: none;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  background-color: transparent;
-}
-
-.form input:hover,
-.form textarea:hover,
-.form select:hover,
-.form button:hover {
-  border-color: var(--link-color);
-}
-
-.form input:focus,
-.form textarea:focus,
-.form select:focus,
-.form button:focus {
-  outline-offset: 4px;
-}
-
-.form input:disabled,
-.form input:hover:disabled,
-.form input:focus:disabled,
-.form textarea:disabled,
-.form textarea:hover:disabled,
-.form textarea:focus:disabled,
-.form select:disabled,
-.form select:hover:disabled,
-.form select:focus:disabled,
-.form input[readonly],
-.form textarea[readonly],
-.form select[readonly] {
-  border-color: #d1d1d1;
-  background-color: var(--light-color);
-  color: var(--dark-color);
-}
-
-.form input[readonly]:focus,
-.form textarea[readonly]:focus,
-.form select[readonly]:focus {
-  outline: 0;
-}
-
-.form input[type='checkbox'],
-.form input[type='radio'] {
-  width: unset;
-}
-
-.form label,
-.form legend {
-  display: block;
-}
-
-.form label[data-required]::after,
-.form legend[data-required]::after {
-  content: '*';
-  margin-left: 0.25ch;
-  color: firebrick;
-}
-
-.form .form-field > label:first-child,
-.form .form-field > legend {
-  font-weight: bold;
-}
-
-.form .form-field + .form-field {
-  margin-top: 1em;
-}
-
-.form .form-field.checkbox-field label,
-.form .form-field.radio-field label {
-  position: relative;
-  padding-left: calc(1em + 1ch);
-  font-size: var(--body-font-size-s);
-  line-height: 44px;
-  cursor: pointer;
-}
-
-.form .form-field.checkbox-field label input,
-.form .form-field.radio-field label input,
-.form .form-field.toggle-field label input {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  margin: 0;
-  width: 1em;
-  height: 1em;
-  cursor: pointer;
-}
-
-.form .form-field.checkbox-field label input:disabled,
-.form .form-field.radio-field label input:disabled {
-  cursor: default;
-}
-
-@media (width >= 600px) {
-  .form .form-field.checkbox-field,
-  .form .form-field.radio-field {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25ch 1em;
-  }
-}
-
-/* custom toggle field */
-.form .form-field.toggle-field label {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
+.form-wrap {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1ch;
-  min-height: 44px;
+  justify-content: flex-start;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(
+    --form-wrap-bg,
+    radial-gradient(circle at center, #ff0000 0%, #cc0000 40%, #990000 70%, #660000 100%)
+  );
+  padding: 48px 24px 64px;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
-.form .form-field.toggle-field label input {
-  width: 2em;
-  opacity: 0;
-  border-radius: 50%;
+/* ——— Intake layout (hero lives in section .default-content) ——— */
+.form-wrap--intake {
+  align-items: flex-start;
+  min-height: auto;
+  padding: 24px clamp(20px, 4vw, 48px) 64px;
 }
 
-.form .form-field.toggle-field label span {
-  position: relative;
-  width: calc(2em + (2 * 1px));
-  height: calc(1em + (2 * 1px));
-  border-radius: 1em;
-  border: 1px solid var(--dark-color);
-  background-color: var(--dark-color);
-  transition: background-color 0.2s;
+.intake-form-layout {
+  width: 100%;
+  max-width: var(--form-dynamic-max-width, 520px);
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.intake-row {
+  display: grid;
+  gap: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.intake-row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.intake-row--split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.form-wrap--intake .field {
+  gap: 8px;
+}
+
+.form-wrap--intake .field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.form-wrap--intake .field input,
+.form-wrap--intake .field select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+
+.form-wrap--intake .field input::placeholder {
+  color: #707070;
+}
+
+.form-wrap--intake .field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.form-wrap--intake .field-checkbox {
+  margin-bottom: 4px;
+}
+
+.form-wrap--intake .checkbox-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.form-wrap--intake .checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b63f6;
+}
+
+.intake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.form-wrap--intake .form-submit {
+  margin-top: 0;
+  padding: 14px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: #3b63f6;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.form-wrap--intake .form-submit:hover {
+  filter: brightness(1.08);
+}
+
+.form-wrap--intake .form-submit.submit-class {
+  background: #3b63f6;
+  border: none;
+}
+
+.form-wrap--intake .form-submit.submit-class:hover {
+  background: #3b63f6;
+  filter: brightness(1.08);
+}
+
+.form-wrap--intake .form-submit:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-wrap--intake .form-status {
+  margin-top: 16px;
+}
+
+.form-wrap--intake .form-status.ok {
+  color: #7fd87f;
+}
+
+.form-wrap--intake .form-status.error {
+  color: #ffb4b4;
+}
+
+@media (width < 900px) {
+  .intake-row--3,
+  .intake-row--split {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+/* Legacy glass card (only if form-wrap is not intake) */
+.form-wrap:not(.form-wrap--intake) .dynamic-form {
+  width: 100%;
+  max-width: var(--form-dynamic-max-width, 520px);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 40px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-wrap:not(.form-wrap--intake) .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-wrap:not(.form-wrap--intake) .field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.form-wrap:not(.form-wrap--intake) .field input,
+.form-wrap:not(.form-wrap--intake) .field select {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  background: #fff;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.form-wrap:not(.form-wrap--intake) .field input::placeholder {
+  color: #888;
+}
+
+.form-wrap:not(.form-wrap--intake) .field select {
   cursor: pointer;
 }
 
-.form .form-field.toggle-field label span::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  width: 1em;
-  height: 1em;
-  border-radius: 50%;
-  background-color: var(--background-color);
-  transition: left 0.2s;
+.form-wrap:not(.form-wrap--intake) .field-checkbox {
+  flex-direction: row;
+  align-items: flex-start;
 }
 
-.form .form-field.toggle-field label input:checked + span {
-  background-color: var(--link-color);
+.form-wrap:not(.form-wrap--intake) .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.4;
 }
 
-.form .form-field.toggle-field label input:checked + span::after {
-  left: calc(100% - 1em);
+.form-wrap:not(.form-wrap--intake) .checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
-.form .form-field.toggle-field label input:disabled + span {
-  border-color: #d1d1d1;
-  background-color: #d1d1d1;
-  cursor: default;
+.form-wrap:not(.form-wrap--intake) .form-submit {
+  margin-top: 8px;
+  padding: 12px 32px;
+  align-self: flex-start;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.form .form-field.toggle-field label input:disabled + span::after {
-  background-color: var(--light-color);
+.form-wrap:not(.form-wrap--intake) .form-submit:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
-.form .field-help-text {
-  margin-top: 0.2em;
-  color: var(--dark-color);
-  font-size: var(--body-font-size-xs);
+.form-wrap:not(.form-wrap--intake) .form-submit.submit-class {
+  background: #cc0000;
+  border-color: #cc0000;
 }
 
-.form .button-wrapper {
-  margin-top: 1em;
+.form-wrap:not(.form-wrap--intake) .form-submit.submit-class:hover {
+  background: #aa0000;
+  border-color: #aa0000;
 }
 
-.form .button-wrapper button {
-  width: 100%;
+.form-status {
+  margin: 0;
+  font-size: 14px;
 }
 
-.form .button-wrapper button.button:disabled,
-.form .button-wrapper button.button:hover:disabled {
-  border-color: var(--dark-color);
-  background-color: var(--dark-color);
-  color: var(--background-color);
-  cursor: progress;
+.form-wrap:not(.form-wrap--intake) .form-status.ok {
+  color: #c8ffc8;
 }
 
-.form .button-wrapper button.button.secondary:disabled,
-.form .button-wrapper button.button.secondary:hover:disabled {
-  border-color: var(--dark-color);
-  background-color: var(--light-color);
-  color: var(--dark-color);
+.form-wrap:not(.form-wrap--intake) .form-status.error {
+  color: #ffcccc;
 }
 
-@media (width >= 600px) {
-  .form .button-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1ch;
+/* Survey demo intake: form lives in left 50% on desktop */
+@media (width >= 900px) {
+  :host {
+    width: 100%;
+    align-self: stretch;
   }
 
-  .form .button-wrapper button {
-    width: max-content;
+  .form-wrap {
+    width: var(--form-intake-desktop-width, 100%);
+    max-width: var(--form-intake-desktop-width, 100%);
+    align-items: flex-start;
   }
 }

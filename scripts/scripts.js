@@ -39,6 +39,14 @@ export async function loadPage() {
 }
 await loadPage();
 
+const { default: injectIntakeFormVideo } = await import('./intake-form-video.js');
+injectIntakeFormVideo();
+
+if (/(^|\/)survey-demo$/.test((window.location.pathname || '/').replace(/\/$/, '') || '/')) {
+  const { default: initSurveyDemoPage } = await import('./survey-demo.js');
+  initSurveyDemoPage();
+}
+
 (function da() {
   const { searchParams } = new URL(window.location.href);
   const hasPreview = searchParams.has('dapreview');
@@ -46,3 +54,5 @@ await loadPage();
   const hasQE = searchParams.has('quick-edit');
   if (hasQE) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
 }());
+
+

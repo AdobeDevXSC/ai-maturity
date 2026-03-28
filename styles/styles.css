@@ -299,6 +299,192 @@ a {
   }
 }
 
+/* Intake section: logo + heading + lede in .default-content, form in .block-content */
+.section.intake-form {
+  position: relative;
+  overflow: hidden;
+  background: #292929;
+  color: #fff;
+  --form-wrap-bg: transparent;
+  --form-intake-desktop-width: 50%;
+  --form-dynamic-max-width: 100%;
+}
+
+/* Sparkle MP4 (injected by scripts/intake-form-video.js) */
+.intake-form-video-wrap {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.intake-form-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.section.intake-form > .default-content,
+.section.intake-form > .block-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Desktop: full-viewport video behind the entire page */
+@media (width >= 900px) {
+  body.intake-form-page-video .intake-form-video-wrap {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    min-width: 100%;
+    height: 100vh;
+    min-height: 100%;
+    z-index: 0;
+  }
+
+  body.intake-form-page-video .intake-form-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  body.intake-form-page-video {
+    background-color: #292929;
+  }
+
+  body.intake-form-page-video main {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.section.intake-form > .default-content {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 48px clamp(20px, 4vw, 48px) 28px;
+  text-align: left;
+  box-sizing: border-box;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.section.intake-form > .default-content > p:first-of-type {
+  margin: 0 0 22px;
+}
+
+.section.intake-form > .default-content picture {
+  display: block;
+  line-height: 0;
+}
+
+.section.intake-form > .default-content img {
+  width: auto;
+  max-width: min(200px, 100%);
+  height: auto;
+  display: block;
+}
+
+.section.intake-form > .default-content h1 {
+  margin: 0 0 16px;
+  font-size: clamp(1.85rem, 4.2vw, 2.55rem);
+  font-weight: 800;
+  line-height: 1.12;
+  color: #fff;
+  max-width: min(100%, 22rem);
+}
+
+.section.intake-form > .default-content h1 + p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 42ch;
+}
+
+@media (width >= 900px) {
+  .section.intake-form > .default-content {
+    max-width: 50%;
+    padding-right: clamp(20px, 4vw, 48px);
+  }
+}
+
+/* survey-demo: one full-viewport section (intake form vs survey) */
+body.survey-demo-page {
+  overflow-x: hidden;
+}
+
+body.survey-demo-page main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hidden until body gets a modifier (set in survey-demo.js) */
+body.survey-demo-page:not(.survey-demo--show-form):not(.survey-demo--show-survey) main > .section.intake-form,
+body.survey-demo-page:not(.survey-demo--show-form):not(.survey-demo--show-survey) main > .section.survey {
+  display: none;
+}
+
+/* No intake-form-data (sessionStorage): show intake section, hide survey */
+body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
+  background: #292929;
+}
+
+body.survey-demo-page.survey-demo--show-form main > .section.survey {
+  display: none;
+}
+
+/* intake-form-data in sessionStorage: hide intake, show survey */
+body.survey-demo-page.survey-demo--show-survey main > .section.intake-form {
+  display: none;
+}
+
+body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+  display: block;
+}
+
+body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
+  flex: 1 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+  flex: 1 0 auto;
+  min-height: 100vh;
+  display: block;
+}
+
+body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .block-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  width: 100%;
+  padding-top: 8px;
+}
+
+body.survey-demo-page.survey-demo--show-survey main > .section.survey > .block-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: none;
+  width: 100%;
+}
+
+body.survey-demo-page.survey-demo--show-form main > .section.intake-form .block,
+body.survey-demo-page.survey-demo--show-survey main > .section.survey .block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 main {
   ul,
   ol {

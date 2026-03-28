@@ -1,85 +1,217 @@
 :host {
   display: block;
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .survey {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: radial-gradient(circle at center, #ff0000 0%, #cc0000 40%, #990000 70%, #660000 100%);
+  padding: 60px 24px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.question-number {
-  font-size: 14px;
-  margin: 0 0 4px;
+.card {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 48px 40px 40px;
+  max-width: 760px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .question-text {
-  font-size: 18px;
-  font-weight: 400;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
   margin: 0 0 40px;
+  line-height: 1.2;
 }
 
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
+  width: 100%;
 }
 
 .option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 24px;
-  background: none;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  padding: 24px 20px;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   font-family: inherit;
+  font-size: 14px;
+  color: #333;
+  transition: border-color 0.15s;
 }
 
 .option:hover {
-  background-color: #f5f5f5;
+  border-color: #ff4444;
 }
 
-.option-letter {
-  font-size: 14px;
-  font-weight: 700;
+.option.selected {
+  border-color: #ff0000;
+  box-shadow: 0 0 0 2px #ff0000;
 }
 
-.option-text {
+.option:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.next {
+  margin-top: 24px;
+  padding: 10px 40px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 14px;
+  transition: background 0.15s;
+}
+
+.next:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.next.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.survey-sync-error {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: #ffb4b4;
+  text-align: center;
+  max-width: 28rem;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dot.active {
+  background: #fff;
+}
+
+.dot.completed {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Summary page */
+.summary-page {
+  justify-content: center;
+}
+
+.summary-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 960px;
+  width: 100%;
+  align-items: start;
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 40px;
+}
+
+.summary-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.summary-image {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+
+.chart-marker {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: #ff0000;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  transition: left 0.4s ease, top 0.4s ease;
+  pointer-events: none;
+}
+
+.summary-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #222;
+  margin: 0 0 24px;
+}
+
+.summary {
+  width: 100%;
 }
 
 .summary-item {
   padding: 16px 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .summary-question {
   font-size: 14px;
   margin: 0 0 4px;
+  color: #666;
 }
 
 .summary-answer {
   font-size: 14px;
   margin: 0;
-  color: #444;
+  color: #222;
 }
 
 .retake {
   margin-top: 24px;
-  padding: 12px 24px;
-  background: #000;
+  padding: 10px 40px;
+  background: #cc0000;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 20px;
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
+  align-self: flex-start;
 }
 
 .retake:hover {
-  background: #333;
+  background: #aa0000;
 }

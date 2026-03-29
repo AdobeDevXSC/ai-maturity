@@ -10,12 +10,31 @@
   <body>
     <sp-theme scale="medium" color="light" system="spectrum">
       <main class="data-tool">
-        <h1 class="data-tool-heading">Adobe Agentic Maturity Diagnostic Data Lookup</h1>
+        <header class="data-tool-page-header">
+          <h1 class="data-tool-heading">Adobe Agentic Maturity Diagnostic Data Lookup</h1>
+          <button type="button" id="data-tool-analyze-open" class="data-tool-analyze-btn">
+            Analyze the data
+          </button>
+        </header>
         <div id="company-picker-mount"></div>
         <section class="data-tool-records-section" aria-labelledby="records-heading">
           <h2 id="records-heading" class="data-tool-subheading">Records</h2>
           <div id="company-records-mount" class="data-tool-records" aria-live="polite"></div>
         </section>
+        <dialog
+          id="data-tool-analyze-dialog"
+          class="data-tool-modal"
+          aria-labelledby="data-tool-modal-title">
+          <div class="data-tool-modal-panel">
+            <div class="data-tool-modal-header">
+              <h2 id="data-tool-modal-title" class="data-tool-modal-title">Analyze the data</h2>
+              <button type="button" class="data-tool-modal-close" aria-label="Close dialog">
+                Close
+              </button>
+            </div>
+            <div class="data-tool-modal-body data-tool-modal-body--analyze" id="data-tool-analyze-body"></div>
+          </div>
+        </dialog>
       </main>
     </sp-theme>
   </body>

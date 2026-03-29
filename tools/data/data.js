@@ -126,6 +126,38 @@ function personHeading(record, index) {
   return `Person ${index + 1}`;
 }
 
+/**
+ * Human-facing name for listings (never prefers email — use with {@link recordEmailForDelete}).
+ * @param {Record<string, unknown>} record
+ * @param {number} index
+ */
+function recordDisplayNameForList(record, index) {
+  if (!record || typeof record !== 'object') return `Person ${index + 1}`;
+
+  const single =
+    record.name ?? record.Name ?? record.fullName ?? record.displayName ?? record.displayname;
+  if (single != null && String(single).trim() !== '') return String(single).trim();
+
+  const fn =
+    record.firstName ??
+    record.firstname ??
+    record.FirstName ??
+    record.givenName ??
+    record.givenname;
+  const ln =
+    record.lastName ??
+    record.lastname ??
+    record.LastName ??
+    record.familyName ??
+    record.familyname;
+  const f = fn != null ? String(fn).trim() : '';
+  const l = ln != null ? String(ln).trim() : '';
+  const combined = [f, l].filter(Boolean).join(' ');
+  if (combined) return combined;
+
+  return `Person ${index + 1}`;
+}
+
 /** Keys to show as metadata (not question IDs, not raw answer blobs). */
 function metadataEntries(record, questionsById) {
   const skip = new Set(['answers', 'surveyAnswers', ...questionsById.keys()]);
@@ -513,8 +545,342 @@ function buildDataToolControls(items, recordsMount) {
   return root;
 }
 
+/**
+ * Fetch records for a company name (Fusion hook `?company=` + CORS proxy fallbacks).
+ * @param {string} companyName
+ * @returns {Promise<unknown[]>}
+ */
+async function fetchCompanyRecordsForAnalyze(companyName) {
+  const apiUrl = `${DATA_HOOK_URL}?company=${encodeURIComponent(companyName)}`;
+
+  async function tryFetchArray(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
+
+  try {
+    return await tryFetchArray(apiUrl);
+  } catch {
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`,
+      `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
+      `https://thingproxy.freeboard.io/fetch/${apiUrl}`,
+    ];
+    for (const proxyUrl of proxies) {
+      try {
+        return await tryFetchArray(proxyUrl);
+      } catch {
+        /* try next proxy */
+      }
+    }
+    throw new Error('All proxies failed. The API may need CORS headers enabled.');
+  }
+}
+
+function countriesFromRecords(records) {
+  if (!Array.isArray(records) || records.length === 0) return [];
+  return [...new Set(records.map((r) => r?.country).filter(Boolean))];
+}
+
+/** Shown after a non-empty company lookup so the user can ask for a respondent list. */
+function respondentsFollowUpQuestion(companyName) {
+  return `\n\nWould you like to know who responded from ${companyName}? Reply yes to see each person’s name and email when we have both, or type another company to look up.`;
+}
+
+function buildLocalCompanySummary(records, companyName) {
+  const count = Array.isArray(records) ? records.length : 0;
+  if (count === 0) {
+    return `I didn't find any records for "${companyName}". Try another company name or check spelling.`;
+  }
+  const countries = countriesFromRecords(records);
+  const countryPhrase =
+    countries.length > 0 ? ` Countries represented: ${countries.join(', ')}.` : '';
+  return `I found ${count} record${count === 1 ? '' : 's'} for "${companyName}".${countryPhrase}${respondentsFollowUpQuestion(companyName)}`;
+}
+
+/**
+ * @param {unknown[]} records
+ * @returns {string}
+ */
+function formatRespondentsFromRecords(records) {
+  if (!Array.isArray(records) || records.length === 0) {
+    return "I don't have anyone to list for that lookup.";
+  }
+  const lines = records.map((r, index) => {
+    const displayName = recordDisplayNameForList(r, index);
+    const email = recordEmailForDelete(r);
+    const generic = displayName === `Person ${index + 1}`;
+    const nameDiffersFromEmail =
+      email &&
+      displayName.trim().toLowerCase() !== email.trim().toLowerCase();
+
+    if (email && !generic && nameDiffersFromEmail) {
+      return `• ${displayName} — ${email}`;
+    }
+    if (email) {
+      return `• ${email}`;
+    }
+    return `• ${displayName}`;
+  });
+  return `Here’s who responded (name and email when available):\n${lines.join('\n')}`;
+}
+
+function isAffirmativeReply(text) {
+  const t = String(text).trim().toLowerCase().replace(/[.!?]+$/u, '');
+  if (t.length === 0) return false;
+  if (t === 'y') return true;
+  return /^(yes|yeah|yep|yup|sure|ok|okay|please|go ahead|show me|tell me)(\s|$)/u.test(t);
+}
+
+function isNegativeReply(text) {
+  const t = String(text).trim().toLowerCase().replace(/[.!?]+$/u, '');
+  if (t.length === 0) return false;
+  if (t === 'n') return true;
+  return /^(no|nope|nah|no thanks|not now|don't|do not)(\s|$)/u.test(t);
+}
+
+function ensureRespondentsOfferInSummary(text, companyName, recordCount) {
+  if (recordCount <= 0) return text;
+  if (/who responded|names or emails|list.*respond/i.test(String(text))) return text;
+  return `${String(text).trim()}${respondentsFollowUpQuestion(companyName)}`;
+}
+
+/**
+ * Same request shape as the React sample. Browser CORS often blocks this; on failure we use
+ * {@link buildLocalCompanySummary}. Optional: assign `window.__DATA_TOOL_ANTHROPIC_KEY__` (dev only).
+ * @param {string} apiKey
+ * @param {unknown[]} records
+ * @param {string} companyName
+ */
+async function askClaudeForCompanySummary(apiKey, records, companyName) {
+  const count = Array.isArray(records) ? records.length : 0;
+  const countries = countriesFromRecords(records);
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system:
+        'You are a helpful assistant that summarizes company record data. Be concise and friendly. Only report what the data says. When there is at least one record, end by asking if the user would like to see who responded from that company (their name and email when available).',
+      messages: [
+        {
+          role: 'user',
+          content: `The API returned ${count} record(s) for the company "${companyName}".${
+            count > 0 && countries.length > 0 ? ` Countries represented: ${countries.join(', ')}.` : ''
+          } Please give a short, friendly summary${
+            count > 0
+              ? ', then ask if they want to see who responded (name and email for each person when the data includes both).'
+              : '.'
+          }`,
+        },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`Anthropic HTTP ${res.status}`);
+  const data = await res.json();
+  const block = Array.isArray(data.content) ? data.content.find((b) => b.type === 'text') : null;
+  const text = block && typeof block.text === 'string' ? block.text : '';
+  return text.trim() !== '' ? text : 'No response from Claude.';
+}
+
+/**
+ * @param {unknown[]} records
+ * @param {string} companyName
+ */
+async function summarizeCompanyRecords(records, companyName) {
+  const count = Array.isArray(records) ? records.length : 0;
+  const rawKey =
+    typeof window !== 'undefined'
+      ? /** @type {{ __DATA_TOOL_ANTHROPIC_KEY__?: string }} */ (window).__DATA_TOOL_ANTHROPIC_KEY__
+      : undefined;
+  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : '';
+  if (apiKey !== '') {
+    try {
+      const text = await askClaudeForCompanySummary(apiKey, records, companyName);
+      return ensureRespondentsOfferInSummary(text, companyName, count);
+    } catch {
+      /* CORS, network, or invalid key — friendly local copy */
+    }
+  }
+  return buildLocalCompanySummary(records, companyName);
+}
+
+function initAnalyzeDataModal() {
+  const openBtn = document.getElementById('data-tool-analyze-open');
+  const dialog = document.getElementById('data-tool-analyze-dialog');
+  const closeBtn = dialog?.querySelector('.data-tool-modal-close');
+  const body = document.getElementById('data-tool-analyze-body');
+  if (!openBtn || !dialog || !closeBtn || !body) return;
+
+  dialog.classList.add('data-tool-modal--analyze');
+
+  const shell = document.createElement('div');
+  shell.className = 'data-tool-analyze-shell';
+
+  const messagesEl = document.createElement('div');
+  messagesEl.className = 'data-tool-analyze-messages';
+  messagesEl.setAttribute('role', 'log');
+  messagesEl.setAttribute('aria-live', 'polite');
+  messagesEl.setAttribute('aria-relevant', 'additions');
+
+  const typingEl = document.createElement('div');
+  typingEl.className = 'data-tool-analyze-typing';
+  typingEl.setAttribute('aria-hidden', 'true');
+  typingEl.hidden = true;
+  typingEl.textContent = 'Looking up records...';
+
+  const form = document.createElement('div');
+  form.className = 'data-tool-analyze-form';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'data-tool-analyze-input';
+  input.placeholder = 'Enter a company name (e.g. Adobe)...';
+  input.setAttribute('autocomplete', 'organization');
+  const sendBtn = document.createElement('button');
+  sendBtn.type = 'button';
+  sendBtn.className = 'data-tool-analyze-send';
+  sendBtn.textContent = 'Send';
+
+  form.append(input, sendBtn);
+  shell.append(messagesEl, typingEl, form);
+  body.append(shell);
+
+  /** @type {{ role: 'user' | 'assistant', text: string }[]} */
+  let messages = [
+    {
+      role: 'assistant',
+      text: 'Hi! I can look up how many records we have for a company. After each result, I can list respondents with name and email when we have both—just say yes when I ask.',
+    },
+  ];
+  let loading = false;
+  /** Last successful company lookup (for yes/no follow-up). */
+  let lastAnalyzeRecords = /** @type {unknown[] | null} */ (null);
+  let respondentsPromptActive = false;
+
+  function syncChrome() {
+    sendBtn.disabled = loading || !input.value.trim();
+    input.disabled = loading;
+  }
+
+  function renderMessages() {
+    messagesEl.replaceChildren();
+    for (const m of messages) {
+      const bubble = document.createElement('div');
+      bubble.className = `data-tool-analyze-bubble data-tool-analyze-bubble--${m.role}`;
+      bubble.textContent = m.text;
+      messagesEl.append(bubble);
+    }
+    typingEl.hidden = !loading;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    syncChrome();
+  }
+
+  async function handleSend() {
+    const trimmed = input.value.trim();
+    if (!trimmed || loading) return;
+    messages = [...messages, { role: 'user', text: trimmed }];
+    input.value = '';
+    loading = true;
+    renderMessages();
+
+    try {
+      if (
+        respondentsPromptActive &&
+        lastAnalyzeRecords &&
+        Array.isArray(lastAnalyzeRecords) &&
+        lastAnalyzeRecords.length > 0
+      ) {
+        if (isAffirmativeReply(trimmed)) {
+          const listText = formatRespondentsFromRecords(lastAnalyzeRecords);
+          messages = [...messages, { role: 'assistant', text: listText }];
+          respondentsPromptActive = false;
+          lastAnalyzeRecords = null;
+        } else if (isNegativeReply(trimmed)) {
+          messages = [
+            ...messages,
+            {
+              role: 'assistant',
+              text: 'No problem. Type another company name whenever you want a new lookup.',
+            },
+          ];
+          respondentsPromptActive = false;
+          lastAnalyzeRecords = null;
+        } else {
+          const records = await fetchCompanyRecordsForAnalyze(trimmed);
+          const reply = await summarizeCompanyRecords(records, trimmed);
+          messages = [...messages, { role: 'assistant', text: reply }];
+          const n = Array.isArray(records) ? records.length : 0;
+          if (n > 0) {
+            lastAnalyzeRecords = records;
+            respondentsPromptActive = true;
+          } else {
+            lastAnalyzeRecords = null;
+            respondentsPromptActive = false;
+          }
+        }
+      } else {
+        const records = await fetchCompanyRecordsForAnalyze(trimmed);
+        const reply = await summarizeCompanyRecords(records, trimmed);
+        messages = [...messages, { role: 'assistant', text: reply }];
+        const n = Array.isArray(records) ? records.length : 0;
+        if (n > 0) {
+          lastAnalyzeRecords = records;
+          respondentsPromptActive = true;
+        } else {
+          lastAnalyzeRecords = null;
+          respondentsPromptActive = false;
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      messages = [...messages, { role: 'assistant', text: `Sorry, something went wrong: ${msg}` }];
+      respondentsPromptActive = false;
+      lastAnalyzeRecords = null;
+    }
+
+    loading = false;
+    renderMessages();
+  }
+
+  sendBtn.addEventListener('click', handleSend);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !loading) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  input.addEventListener('input', syncChrome);
+
+  renderMessages();
+
+  openBtn.addEventListener('click', () => {
+    if (typeof dialog.showModal === 'function') {
+      dialog.showModal();
+      requestAnimationFrame(() => {
+        input.focus();
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+  });
+
+  closeBtn.addEventListener('click', () => dialog.close());
+
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+}
+
 (async function init() {
   await customElements.whenDefined('sp-theme');
+
+  initAnalyzeDataModal();
 
   const mount = document.getElementById('company-picker-mount');
   const recordsMount = document.getElementById('company-records-mount');

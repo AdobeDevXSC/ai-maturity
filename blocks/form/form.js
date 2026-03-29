@@ -12,10 +12,43 @@ const INTAKE_SUBMIT_HOOK_URL =
   'https://hook.fusion.adobe.com/v64d1uyfggdtifqtn2xpp3y2588qpxd7';
 
 /**
- * Reads Fusion hook response: JSON object with key/userKey/user_key/id, JSON string, or plain text.
+ * Hook may return plain text or JSON whose message/error fields say the user already submitted.
  */
-async function readUserKeyFromResponse(res) {
-  const text = await res.text();
+function isCannotRepeatResponse(text) {
+  const normalized = String(text || '').trim().toLowerCase();
+  if (normalized.includes('cannot repeat')) return true;
+  try {
+    const o = JSON.parse(String(text || '').trim());
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return false;
+    const candidates = [
+      o.message,
+      o.Message,
+      o.error,
+      o.Error,
+      o.reason,
+      o.detail,
+    ];
+    return candidates.some(
+      (v) => typeof v === 'string' && v.toLowerCase().includes('cannot repeat'),
+    );
+  } catch {
+    return false;
+  }
+}
+
+function resetIntakeSessionStorage() {
+  try {
+    sessionStorage.clear();
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Reads Fusion hook response body: JSON object with key/userKey/user_key/id, JSON string, or plain text.
+ * @param {string} text
+ */
+function readUserKeyFromResponseText(text) {
   const trimmed = text.trim();
   if (!trimmed) return undefined;
   try {
@@ -142,6 +175,18 @@ class FormCmp extends LitElement {
         body: JSON.stringify(payload),
       });
 
+      const responseText = await res.text();
+
+      if (isCannotRepeatResponse(responseText)) {
+        resetIntakeSessionStorage();
+        this._status = {
+          type: 'error',
+          message:
+            'This assessment can only be completed once. You have already submitted your information.',
+        };
+        return;
+      }
+
       if (!res.ok) {
         this._status = {
           type: 'error',
@@ -150,7 +195,7 @@ class FormCmp extends LitElement {
         return;
       }
 
-      const userKey = await readUserKeyFromResponse(res);
+      const userKey = readUserKeyFromResponseText(responseText);
       const storedPayload = { ...payload };
       if (userKey !== undefined) {
         storedPayload.userKey = userKey;

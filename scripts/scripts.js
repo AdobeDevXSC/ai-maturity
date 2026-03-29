@@ -42,7 +42,10 @@ await loadPage();
 const { default: injectIntakeFormVideo } = await import('./intake-form-video.js');
 injectIntakeFormVideo();
 
-if (/(^|\/)survey-demo$/.test((window.location.pathname || '/').replace(/\/$/, '') || '/')) {
+const surveyDemoPath = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+const isSurveyDemoPage =
+  surveyDemoPath === '/' || surveyDemoPath === '/survey-demo';
+if (isSurveyDemoPage) {
   const { default: initSurveyDemoPage } = await import('./survey-demo.js');
   initSurveyDemoPage();
 }

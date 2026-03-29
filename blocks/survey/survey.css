@@ -1,65 +1,141 @@
 :host {
   display: block;
+  width: 100%;
+  min-height: 100%;
 }
 
 .survey {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: radial-gradient(circle at center, #ff0000 0%, #cc0000 40%, #990000 70%, #660000 100%);
-  padding: 60px 24px 40px;
+  justify-content: center;
+  /* Section `.section.survey` supplies full-viewport background art */
+  background: transparent;
   min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
   box-sizing: border-box;
+  padding: clamp(12px, 3vh, 28px) clamp(12px, 4vw, 40px);
+  gap: clamp(20px, 3vh, 36px);
 }
 
+/* Large centered glass panel behind question + options + Next */
 .card {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 48px 40px 40px;
-  max-width: 760px;
-  width: 100%;
+  --glass-blur: 28px;
+  width: min(90vw, 1200px);
+  min-height: min(78dvh, 820px);
+  max-height: min(88dvh, 940px);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 5vw, 56px) clamp(32px, 5vw, 56px);
+  overflow-y: auto;
+
+  border-radius: clamp(20px, 2.5vw, 28px);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  background:
+    radial-gradient(120% 80% at 0% 50%, rgba(255, 255, 255, 0.35) 0%, transparent 55%),
+    radial-gradient(120% 80% at 100% 50%, rgba(255, 240, 240, 0.28) 0%, transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(180, 30, 40, 0.45) 0%,
+      rgba(140, 20, 35, 0.38) 45%,
+      rgba(200, 50, 55, 0.32) 100%
+    ),
+    rgba(255, 255, 255, 0.12);
+
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .card {
+    background: rgba(120, 20, 30, 0.72);
+  }
+}
+
+/* Subtle enter when advancing to the next question (see survey.js `_replayQuestionPaneAnimation`) */
+.question-pane {
+  width: 100%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: survey-question-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes survey-question-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .question-pane {
+    animation-duration: 0.01ms;
+    animation-timing-function: linear;
+  }
 }
 
 .question-text {
-  font-size: 32px;
+  font-size: clamp(1.25rem, 2.8vw, 2rem);
   font-weight: 800;
   color: #fff;
   text-align: center;
-  margin: 0 0 40px;
-  line-height: 1.2;
+  margin: 0 0 clamp(28px, 4vh, 40px);
+  line-height: 1.25;
+  max-width: 52ch;
+  text-wrap: balance;
 }
 
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: clamp(16px, 2.5vw, 22px);
   width: 100%;
+  max-width: 920px;
 }
 
 .option {
   background: #fff;
-  border: 2px solid #fff;
-  border-radius: 8px;
-  padding: 24px 20px;
+  border: none;
+  border-radius: 12px;
+  padding: clamp(18px, 2.5vw, 26px) clamp(16px, 2vw, 22px);
   cursor: pointer;
   text-align: center;
   font-family: inherit;
-  font-size: 14px;
-  color: #333;
-  transition: border-color 0.15s;
+  font-size: clamp(13px, 1.5vw, 15px);
+  font-weight: 500;
+  color: #111;
+  line-height: 1.35;
+  transition:
+    box-shadow 0.15s,
+    transform 0.12s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.option:hover {
-  border-color: #ff4444;
+.option:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
 }
 
 .option.selected {
-  border-color: #ff0000;
-  box-shadow: 0 0 0 2px #ff0000;
+  box-shadow:
+    0 0 0 3px #c41e1e,
+    0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .option:disabled {
@@ -68,25 +144,36 @@
 }
 
 .next {
-  margin-top: 24px;
-  padding: 10px 40px;
-  background: rgba(255, 255, 255, 0.25);
+  margin-top: clamp(28px, 4vh, 40px);
+  padding: 12px 48px;
+  min-width: 8rem;
+  background: #1a1a1a;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 20px;
+  border: none;
+  border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  transition: background 0.15s;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    background 0.15s,
+    transform 0.12s;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
-.next:hover {
-  background: rgba(255, 255, 255, 0.35);
+.next:hover:not(.disabled) {
+  background: #2d2d2d;
+}
+
+.next:active:not(.disabled) {
+  transform: scale(0.98);
 }
 
 .next.disabled {
-  opacity: 0.4;
+  opacity: 0.38;
   cursor: default;
+  box-shadow: none;
 }
 
 .survey-sync-error {
@@ -97,30 +184,45 @@
   max-width: 28rem;
 }
 
+/* Below the glass panel: outline dots, solid fill for current step */
 .dots {
   display: flex;
-  gap: 8px;
-  margin-top: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  box-sizing: border-box;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
 }
 
 .dot.active {
   background: #fff;
+  border-color: #fff;
+  transform: scale(1.12);
 }
 
 .dot.completed {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
-/* Summary page */
+/* Summary page (no `.card`; keep vertically centered in viewport) */
 .summary-page {
   justify-content: center;
+  padding-bottom: clamp(24px, 4vh, 48px);
 }
 
 .summary-columns {

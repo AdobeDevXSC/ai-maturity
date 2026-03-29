@@ -299,15 +299,27 @@ a {
   }
 }
 
-/* Intake section: logo + heading + lede in .default-content, form in .block-content */
-.section.intake-form {
+/* Intake: charcoal shell + form; start screen: black + centered hero (see mockup) */
+.section.intake-form,
+.section.start-screen {
   position: relative;
   overflow: hidden;
-  background: #292929;
   color: #fff;
+}
+
+.section.intake-form {
+  background: #292929;
   --form-wrap-bg: transparent;
   --form-intake-desktop-width: 50%;
   --form-dynamic-max-width: 100%;
+}
+
+.section.start-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
 }
 
 /* Sparkle MP4 (injected by scripts/intake-form-video.js) */
@@ -322,18 +334,20 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  /* Sparkle art sits on the right in the source frame; bias so copy stays clear on the left */
+  object-position: right center;
 }
 
 .section.intake-form > .default-content,
-.section.intake-form > .block-content {
+.section.intake-form > .block-content,
+.section.start-screen > .default-content {
   position: relative;
   z-index: 1;
 }
 
-/* Desktop: full-viewport video behind the entire page */
+/* Desktop: full-viewport video behind the entire page (single-section flows only) */
 @media (width >= 900px) {
-  body.intake-form-page-video .intake-form-video-wrap {
+  body.intake-form-page-video:not(.survey-demo-page) .intake-form-video-wrap {
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -343,43 +357,82 @@ a {
     z-index: 0;
   }
 
-  body.intake-form-page-video .intake-form-video {
+  body.intake-form-page-video:not(.survey-demo-page) .intake-form-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: right center;
   }
 
-  body.intake-form-page-video {
+  body.intake-form-page-video:not(.survey-demo-page) {
     background-color: #292929;
   }
 
-  body.intake-form-page-video main {
+  body.intake-form-page-video:not(.survey-demo-page) main {
     position: relative;
     z-index: 1;
   }
+
+  /* Stacked start → intake → survey: one video per layer, clipped to each section */
+  body.survey-demo-page.intake-form-page-video .intake-form-video-wrap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    z-index: 0;
+  }
+
+  body.survey-demo-page.intake-form-page-video .intake-form-video {
+    object-position: right center;
+  }
 }
 
-.section.intake-form > .default-content {
+.section.intake-form > .default-content,
+.section.start-screen > .default-content {
   max-width: none;
   width: 100%;
   margin: 0;
-  padding: 48px clamp(20px, 4vw, 48px) 28px;
   text-align: left;
   box-sizing: border-box;
+}
+
+.section.intake-form > .default-content {
+  padding: 48px clamp(20px, 4vw, 48px) 28px;
   border-bottom: 1px solid #3d3d3d;
+}
+
+.section.start-screen > .default-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(28px, 5vh, 56px) clamp(20px, 7vw, 96px);
+  min-height: 0;
 }
 
 .section.intake-form > .default-content > p:first-of-type {
   margin: 0 0 22px;
 }
 
-.section.intake-form > .default-content picture {
+/* Logo fixed to top-left; hero type stays vertically centered as a group */
+.section.start-screen > .default-content > p:first-of-type {
+  position: absolute;
+  top: clamp(28px, 4vh, 52px);
+  left: clamp(20px, 7vw, 96px);
+  margin: 0;
+  z-index: 2;
+}
+
+.section.intake-form > .default-content picture,
+.section.start-screen > .default-content picture {
   display: block;
   line-height: 0;
 }
 
-.section.intake-form > .default-content img {
+.section.intake-form > .default-content img,
+.section.start-screen > .default-content img {
   width: auto;
   max-width: min(200px, 100%);
   height: auto;
@@ -395,6 +448,16 @@ a {
   max-width: min(100%, 22rem);
 }
 
+.section.start-screen > .default-content h1 {
+  margin: 0 0 clamp(16px, 2.5vh, 24px);
+  font-size: clamp(2.1rem, 5.2vw, 3.35rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  max-width: 12ch;
+}
+
 .section.intake-form > .default-content h1 + p {
   margin: 0;
   font-size: 1rem;
@@ -404,59 +467,205 @@ a {
   max-width: 42ch;
 }
 
+.section.start-screen > .default-content h1 + p {
+  margin: 0 0 clamp(24px, 4vh, 40px);
+  padding: 0;
+  border: none;
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: #fff;
+  max-width: 38ch;
+}
+
+.section.start-screen > .default-content a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  padding: 14px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff !important;
+  text-decoration: none;
+  background: #3b59ff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.section.start-screen > .default-content a:hover {
+  filter: brightness(1.08);
+}
+
 @media (width >= 900px) {
   .section.intake-form > .default-content {
     max-width: 50%;
     padding-right: clamp(20px, 4vw, 48px);
   }
+
+  .section.start-screen > .default-content {
+    max-width: 50%;
+    padding-right: clamp(20px, 4vw, 48px);
+  }
+
+  .section.start-screen > .default-content > p:first-of-type {
+    left: clamp(20px, 7vw, 96px);
+  }
 }
 
-/* survey-demo: one full-viewport section (intake form vs survey) */
+/* survey-demo: stacked start + intake + survey with crossfade (opacity), set in survey-demo.js */
 body.survey-demo-page {
   overflow-x: hidden;
 }
 
 body.survey-demo-page main {
+  position: relative;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 100dvh;
+  display: block;
 }
 
-/* Hidden until body gets a modifier (set in survey-demo.js) */
-body.survey-demo-page:not(.survey-demo--show-form):not(.survey-demo--show-survey) main > .section.intake-form,
-body.survey-demo-page:not(.survey-demo--show-form):not(.survey-demo--show-survey) main > .section.survey {
+/* Hidden until body gets a visibility modifier (set in survey-demo.js) */
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
+  main
+  > .section.intake-form,
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
+  main
+  > .section.survey,
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
+  main
+  > .section.start-screen {
   display: none;
 }
 
-/* No intake-form-data (sessionStorage): show intake section, hide survey */
+/* All layers mounted and full-viewport; visibility via opacity + z-index */
+body.survey-demo-page.survey-demo--show-start main > .section.start-screen,
+body.survey-demo-page.survey-demo--show-start main > .section.intake-form,
+body.survey-demo-page.survey-demo--show-start main > .section.survey,
+body.survey-demo-page.survey-demo--show-form main > .section.start-screen,
+body.survey-demo-page.survey-demo--show-form main > .section.intake-form,
+body.survey-demo-page.survey-demo--show-form main > .section.survey,
+body.survey-demo-page.survey-demo--show-survey main > .section.start-screen,
+body.survey-demo-page.survey-demo--show-survey main > .section.intake-form,
+body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  transition: opacity 0.55s ease;
+}
+
+/* Start screen on top */
+body.survey-demo-page.survey-demo--show-start main > .section.start-screen {
+  z-index: 3;
+  opacity: 1;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+
+body.survey-demo-page.survey-demo--show-start main > .section.intake-form {
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  background: #292929;
+}
+
+body.survey-demo-page.survey-demo--show-start main > .section.survey {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  display: block;
+  background-color: #d81f26;
+  background-image: url('/images/survey-background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+/* Intake on top while showing form */
+body.survey-demo-page.survey-demo--show-form main > .section.start-screen {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+
 body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
+  z-index: 2;
+  opacity: 1;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
   background: #292929;
 }
 
 body.survey-demo-page.survey-demo--show-form main > .section.survey {
-  display: none;
-}
-
-/* intake-form-data in sessionStorage: hide intake, show survey */
-body.survey-demo-page.survey-demo--show-survey main > .section.intake-form {
-  display: none;
-}
-
-body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
   display: block;
+  background-color: #d81f26;
+  background-image: url('/images/survey-background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
-  flex: 1 0 auto;
-  min-height: 100vh;
+/* Survey on top after intake submit */
+body.survey-demo-page.survey-demo--show-survey main > .section.start-screen {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
+  background: #000;
+}
+
+body.survey-demo-page.survey-demo--show-survey main > .section.intake-form {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  background: #292929;
 }
 
 body.survey-demo-page.survey-demo--show-survey main > .section.survey {
-  flex: 1 0 auto;
-  min-height: 100vh;
+  z-index: 2;
+  opacity: 1;
+  pointer-events: auto;
   display: block;
+  background-color: #d81f26;
+  background-image: url('/images/survey-background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.survey-demo-page.survey-demo--show-start main > .section.start-screen,
+  body.survey-demo-page.survey-demo--show-start main > .section.intake-form,
+  body.survey-demo-page.survey-demo--show-start main > .section.survey,
+  body.survey-demo-page.survey-demo--show-form main > .section.start-screen,
+  body.survey-demo-page.survey-demo--show-form main > .section.intake-form,
+  body.survey-demo-page.survey-demo--show-form main > .section.survey,
+  body.survey-demo-page.survey-demo--show-survey main > .section.start-screen,
+  body.survey-demo-page.survey-demo--show-survey main > .section.intake-form,
+  body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+    transition-duration: 0.01ms;
+  }
 }
 
 body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .block-content {

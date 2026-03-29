@@ -1,12 +1,14 @@
 const INTAKE_SPARKLE_VIDEO_URL =
   'https://publish-p124903-e1367755.adobeaemcloud.com/content/dam/ai-assessment/sparkle%20animation%20op4.mp4';
 
+const SPARKLE_SECTION_SELECTOR = 'main .section.intake-form, main .section.start-screen';
+
 /**
- * Inserts autoplaying sparkle video into each intake form section (once).
+ * Inserts autoplaying sparkle video into intake and start-screen sections (once each).
  */
 export default function injectIntakeFormVideo() {
   let added = false;
-  for (const section of document.querySelectorAll('main .section.intake-form')) {
+  for (const section of document.querySelectorAll(SPARKLE_SECTION_SELECTOR)) {
     if (section.querySelector('.intake-form-video-wrap')) continue;
 
     const wrap = document.createElement('div');

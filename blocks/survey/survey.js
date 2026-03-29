@@ -42,12 +42,28 @@ class Survey extends LitElement {
     this._answers = {};
     this._syncing = false;
     this._syncError = null;
+    /** When true, next `updated` after index change replays `.question-pane` enter animation. */
+    this._animateNextQuestion = false;
   }
 
   updated(changed) {
     if (changed.has('questions') && this.questions.length > 0) {
       this._hydrateFromSessionStorage();
     }
+    if (changed.has('_currentIndex') && this._animateNextQuestion) {
+      this._animateNextQuestion = false;
+      if (this._currentIndex < this.questions.length) {
+        requestAnimationFrame(() => this._replayQuestionPaneAnimation());
+      }
+    }
+  }
+
+  _replayQuestionPaneAnimation() {
+    const pane = this.renderRoot?.querySelector('.question-pane');
+    if (!pane) return;
+    pane.style.animation = 'none';
+    void pane.offsetHeight;
+    pane.style.animation = '';
   }
 
   _readStoredAnswers() {
@@ -121,6 +137,7 @@ class Survey extends LitElement {
   _next() {
     const q = this.questions[this._currentIndex];
     if (!q || !this._answers[q.ID]) return;
+    this._animateNextQuestion = true;
     this._currentIndex += 1;
   }
 
@@ -181,29 +198,35 @@ class Survey extends LitElement {
     }
 
     const q = this.questions[this._currentIndex];
+    if (!q) {
+      return this._renderSummary();
+    }
+
     const options = ['A', 'B', 'C', 'D'];
 
     return html`
       <div class="survey">
         <div class="card">
-          <h3 class="question-text">${q.Question}</h3>
-          <div class="options-grid">
-            ${options.map((letter) => html`
-              <button
-                type="button"
-                class="option ${this._answers[q.ID] === letter ? 'selected' : ''}"
-                ?disabled=${this._syncing}
-                @click=${() => this._selectOption(letter)}>
-                ${q[`Option ${letter}`]}
-              </button>
-            `)}
+          <div class="question-pane">
+            <h3 class="question-text">${q.Question}</h3>
+            <div class="options-grid">
+              ${options.map((letter) => html`
+                <button
+                  type="button"
+                  class="option ${this._answers[q.ID] === letter ? 'selected' : ''}"
+                  ?disabled=${this._syncing}
+                  @click=${() => this._selectOption(letter)}>
+                  ${q[`Option ${letter}`]}
+                </button>
+              `)}
+            </div>
+            <button class="next ${this._answers[q.ID] && !this._syncing ? '' : 'disabled'}" @click=${this._next}>
+              Next
+            </button>
+            ${this._syncError
+              ? html`<p class="survey-sync-error">${this._syncError}</p>`
+              : nothing}
           </div>
-          <button class="next ${this._answers[q.ID] && !this._syncing ? '' : 'disabled'}" @click=${this._next}>
-            Next
-          </button>
-          ${this._syncError
-            ? html`<p class="survey-sync-error">${this._syncError}</p>`
-            : nothing}
         </div>
         <div class="dots">
           ${this.questions.map((_, i) => html`
@@ -217,7 +240,15 @@ class Survey extends LitElement {
 
 customElements.define('survey-questions', Survey);
 
-
+/** Drop trailing/empty sheet rows so we never show a blank 2×2 (ghost “question 11”). */
+function isValidSurveyQuestion(q) {
+  if (!q || typeof q !== 'object') return false;
+  if (!String(q.Question ?? '').trim()) return false;
+  if (String(q.ID ?? '').trim() === '') return false;
+  return ['A', 'B', 'C', 'D'].some(
+    (L) => String(q[`Option ${L}`] ?? '').trim() !== '',
+  );
+}
 
 export default async function init(el) {
   const questions = el.querySelector('a');
@@ -225,9 +256,11 @@ export default async function init(el) {
   const resp = await fetch(questions.href);
   if (!resp.ok) return;
   const json = await resp.json();
-  
+
+  const raw = Array.isArray(json.data) ? json.data : [];
+  const filtered = raw.filter(isValidSurveyQuestion);
+
   const cmp = document.createElement('survey-questions');
-  cmp.questions = json.data;
+  cmp.questions = filtered;
   el.append(cmp);
-  
 }

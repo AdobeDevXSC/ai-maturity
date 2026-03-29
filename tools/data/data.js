@@ -13,6 +13,26 @@ const DATA_HOOK_URL =
 /** Same origin as the data tool page — resolves survey copy from the site root. */
 const SURVEY_JSON_URL = '/survey.json';
 
+/** Spinner + status text while Fusion / records requests are in flight. */
+function createApiLoadingUI(message) {
+  const wrap = document.createElement('div');
+  wrap.className = 'data-tool-api-loading';
+  wrap.setAttribute('role', 'status');
+  wrap.setAttribute('aria-live', 'polite');
+  wrap.setAttribute('aria-busy', 'true');
+
+  const spinner = document.createElement('span');
+  spinner.className = 'data-tool-spinner';
+  spinner.setAttribute('aria-hidden', 'true');
+
+  const label = document.createElement('span');
+  label.className = 'data-tool-loading-label';
+  label.textContent = message;
+
+  wrap.append(spinner, label);
+  return wrap;
+}
+
 /** @type {Map<string, object> | null} */
 let surveyQuestionsById = null;
 
@@ -137,10 +157,66 @@ function renderSurveyReport(records, questionsById) {
     const article = document.createElement('article');
     article.className = 'data-tool-person';
 
+    const header = document.createElement('div');
+    header.className = 'data-tool-person-header';
+
     const h3 = document.createElement('h3');
     h3.className = 'data-tool-person-title';
     h3.textContent = personHeading(record, index);
-    article.append(h3);
+    header.append(h3);
+
+    const deleteEmail = recordEmailForDelete(record);
+    if (deleteEmail) {
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'data-tool-person-delete';
+      delBtn.setAttribute(
+        'aria-label',
+        `Delete record for ${deleteEmail} from the database`,
+      );
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', async () => {
+        if (
+          !window.confirm(
+            `Remove this person (${deleteEmail}) from the database? This cannot be undone.`,
+          )
+        ) {
+          return;
+        }
+        delBtn.disabled = true;
+        article.querySelector('.data-tool-person-delete-error')?.remove();
+        try {
+          const res = await fetch(recordsDeleteUrlForEmail(deleteEmail));
+          const report = article.closest('.data-tool-report');
+          if (!res.ok) {
+            delBtn.disabled = false;
+            const err = document.createElement('p');
+            err.className = 'data-tool-person-delete-error';
+            err.setAttribute('role', 'alert');
+            err.textContent = `Delete failed (${res.status}).`;
+            header.after(err);
+            return;
+          }
+          article.remove();
+          if (report && !report.querySelector('.data-tool-person')) {
+            const empty = document.createElement('p');
+            empty.className = 'data-tool-empty';
+            empty.textContent = 'No records returned.';
+            report.append(empty);
+          }
+        } catch {
+          delBtn.disabled = false;
+          const err = document.createElement('p');
+          err.className = 'data-tool-person-delete-error';
+          err.setAttribute('role', 'alert');
+          err.textContent = 'Network error. Could not delete.';
+          header.after(err);
+        }
+      });
+      header.append(delBtn);
+    }
+
+    article.append(header);
 
     const meta = metadataEntries(record, questionsById);
     if (meta.length) {
@@ -225,10 +301,36 @@ function countRecordsByCompany(rows) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Records hook: `company` only, or `email` + `action=lookup` — never both company and email. */
 function recordsUrlForCompany(companyName) {
   const url = new URL(DATA_HOOK_URL);
-  url.searchParams.set('company', companyName);
+  url.search = '';
+  url.searchParams.set('company', String(companyName).trim());
   return url.toString();
+}
+
+function recordsUrlForEmail(email) {
+  const url = new URL(DATA_HOOK_URL);
+  url.search = '';
+  url.searchParams.set('email', String(email).trim());
+  url.searchParams.set('action', 'lookup');
+  return url.toString();
+}
+
+/** Delete row: only `email` and `action=delete` (same hook as lookups). */
+function recordsDeleteUrlForEmail(email) {
+  const url = new URL(DATA_HOOK_URL);
+  url.search = '';
+  url.searchParams.set('email', String(email).trim());
+  url.searchParams.set('action', 'delete');
+  return url.toString();
+}
+
+function recordEmailForDelete(record) {
+  if (!record || typeof record !== 'object') return '';
+  const raw = record.email ?? record.Email;
+  if (raw == null || raw === '') return '';
+  return String(raw).trim();
 }
 
 function renderRecords(records, questionsById) {
@@ -245,7 +347,7 @@ function renderRecords(records, questionsById) {
   if (!Array.isArray(records) || records.length === 0) {
     const p = document.createElement('p');
     p.className = 'data-tool-empty';
-    p.textContent = 'No records returned for this company.';
+    p.textContent = 'No records returned.';
     wrap.append(p);
     return wrap;
   }
@@ -253,19 +355,70 @@ function renderRecords(records, questionsById) {
   return wrap;
 }
 
-async function fetchAndRenderCompanyRecords(companyName, recordsMount) {
-  recordsMount.replaceChildren();
-  const loading = document.createElement('p');
-  loading.className = 'data-tool-loading';
-  loading.textContent = 'Loading records…';
-  recordsMount.append(loading);
+/** Keys that suggest the JSON root is one Fusion row (common for `?email=`). */
+const RECORD_ROW_HINT_KEYS = new Set([
+  'email',
+  'company',
+  'answers',
+  'surveyAnswers',
+  'firstname',
+  'lastname',
+  'firstName',
+  'lastName',
+  'country',
+]);
+
+/**
+ * Normalize hook JSON to an array of rows. Email lookups often return
+ * `{ data: { ...one row } }` instead of `{ data: [ ... ] }` or a bare array.
+ * @param {unknown} data
+ * @returns {unknown[]}
+ */
+function normalizeRecordsFromApiResponse(data) {
+  if (data == null) return [];
+  if (Array.isArray(data)) return data;
+  if (typeof data !== 'object') return [];
+
+  const d = /** @type {Record<string, unknown>} */ (data);
+
+  if (Array.isArray(d.data)) return d.data;
+  if (d.data != null && typeof d.data === 'object' && !Array.isArray(d.data)) {
+    return [d.data];
+  }
+
+  if (Array.isArray(d.records)) return d.records;
+  if (
+    d.records != null &&
+    typeof d.records === 'object' &&
+    !Array.isArray(d.records)
+  ) {
+    return [d.records];
+  }
+
+  if (Array.isArray(d.results)) return d.results;
+  if (
+    d.results != null &&
+    typeof d.results === 'object' &&
+    !Array.isArray(d.results)
+  ) {
+    return [d.results];
+  }
+
+  if (Object.keys(d).some((k) => RECORD_ROW_HINT_KEYS.has(k))) {
+    return [d];
+  }
+
+  return [];
+}
+
+async function fetchAndRenderRecordsForUrl(url, recordsMount, errorMessage) {
+  recordsMount.replaceChildren(createApiLoadingUI('Loading records…'));
 
   try {
-    const res = await fetch(recordsUrlForCompany(companyName));
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const records = Array.isArray(data) ? data : data?.data;
-    if (!Array.isArray(records)) throw new Error('Invalid records shape');
+    const records = normalizeRecordsFromApiResponse(data);
 
     recordsMount.replaceChildren(renderRecords(records, surveyQuestionsById));
   } catch {
@@ -273,9 +426,25 @@ async function fetchAndRenderCompanyRecords(companyName, recordsMount) {
     const err = document.createElement('p');
     err.className = 'data-tool-error';
     err.setAttribute('role', 'alert');
-    err.textContent = 'Could not load records for this company.';
+    err.textContent = errorMessage;
     recordsMount.append(err);
   }
+}
+
+function fetchAndRenderCompanyRecords(companyName, recordsMount) {
+  return fetchAndRenderRecordsForUrl(
+    recordsUrlForCompany(companyName),
+    recordsMount,
+    'Could not load records for this company.',
+  );
+}
+
+function fetchAndRenderEmailRecords(email, recordsMount) {
+  return fetchAndRenderRecordsForUrl(
+    recordsUrlForEmail(email),
+    recordsMount,
+    'Could not load records for this email address.',
+  );
 }
 
 function buildCompanyPicker(items, recordsMount) {
@@ -307,6 +476,43 @@ function buildCompanyPicker(items, recordsMount) {
   return field;
 }
 
+function buildEmailLookup(recordsMount) {
+  const field = document.createElement('div');
+  field.className = 'data-tool-field';
+
+  const label = document.createElement('label');
+  label.className = 'data-tool-email-label';
+  label.htmlFor = 'data-tool-email-input';
+  label.textContent = 'Email address';
+
+  const input = document.createElement('input');
+  input.id = 'data-tool-email-input';
+  input.type = 'email';
+  input.name = 'email';
+  input.setAttribute('autocomplete', 'email');
+  input.setAttribute('inputmode', 'email');
+  input.setAttribute('placeholder', 'name@example.com');
+  input.className = 'data-tool-email-input';
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const v = input.value.trim();
+    if (!v) return;
+    fetchAndRenderEmailRecords(v, recordsMount);
+  });
+
+  field.append(label, input);
+  return field;
+}
+
+function buildDataToolControls(items, recordsMount) {
+  const root = document.createElement('div');
+  root.className = 'data-tool-controls';
+  root.append(buildCompanyPicker(items, recordsMount), buildEmailLookup(recordsMount));
+  return root;
+}
+
 (async function init() {
   await customElements.whenDefined('sp-theme');
 
@@ -316,8 +522,11 @@ function buildCompanyPicker(items, recordsMount) {
 
   const hint = document.createElement('p');
   hint.className = 'data-tool-hint';
-  hint.textContent = 'Select a company to load its records.';
+  hint.textContent =
+    'Select a company, or type an email address and press Enter.';
   recordsMount.append(hint);
+
+  mount.replaceChildren(createApiLoadingUI('Loading…'));
 
   try {
     surveyQuestionsById = await loadSurveyDefinition();
@@ -333,7 +542,7 @@ function buildCompanyPicker(items, recordsMount) {
 
     const items = countRecordsByCompany(rows);
 
-    mount.replaceChildren(buildCompanyPicker(items, recordsMount));
+    mount.replaceChildren(buildDataToolControls(items, recordsMount));
   } catch {
     const err = document.createElement('p');
     err.className = 'data-tool-error';

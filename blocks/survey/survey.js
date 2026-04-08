@@ -3,6 +3,8 @@ import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.j
 import 'https://da.live/nx/public/sl/components.js';
 
 const SURVEY_ANSWERS_KEY = 'survey-answers';
+/** Running totals by question `Category` (JSON object), derived from answers + score sheet. */
+const SURVEY_CATEGORY_SCORES_KEY = 'survey-scores-by-category';
 /** Same key as blocks/form/form.js — intake payload `{ submittedAt, data }` */
 const INTAKE_FORM_STORAGE_KEY = 'intake-form-data';
 const SURVEY_HOOK_URL =
@@ -24,11 +26,37 @@ const sheet = new CSSStyleSheet();
 const cssText = await fetch(new URL('./survey.css', import.meta.url)).then((r) => r.text());
 sheet.replaceSync(cssText);
 
+/** Legacy: `json.data` is the questions array. Multi-sheet: `json.data.data`. */
+function normalizeQuestionsArray(json) {
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.data?.data)) return json.data.data;
+  return [];
+}
+
+/** Build A–D point values from `json.score.data` rows (`Option`, `Score`). */
+function buildOptionScoresMap(scoreSheetRows) {
+  const out = { A: 0, B: 0, C: 0, D: 0 };
+  if (!Array.isArray(scoreSheetRows)) return out;
+  for (const row of scoreSheetRows) {
+    const opt = String(row?.Option ?? row?.option ?? '')
+      .trim()
+      .toUpperCase()
+      .charAt(0);
+    if (!['A', 'B', 'C', 'D'].includes(opt)) continue;
+    const raw = row?.Score ?? row?.score;
+    const n = Number(raw);
+    out[opt] = Number.isFinite(n) ? n : 0;
+  }
+  return out;
+}
+
 class Survey extends LitElement {
   static styles = sheet;
 
   static properties = {
     questions: { type: Array },
+    /** Points per option letter from survey score sheet */
+    optionScores: { type: Object },
     _currentIndex: { state: true },
     _answers: { state: true },
     _syncing: { state: true },
@@ -38,6 +66,7 @@ class Survey extends LitElement {
   constructor() {
     super();
     this.questions = [];
+    this.optionScores = { A: 0, B: 0, C: 0, D: 0 };
     this._currentIndex = 0;
     this._answers = {};
     this._syncing = false;
@@ -92,6 +121,7 @@ class Survey extends LitElement {
       if (!res.ok) return false;
       try {
         sessionStorage.setItem(SURVEY_ANSWERS_KEY, JSON.stringify(nextAnswers));
+        this._persistCategoryScores(nextAnswers);
       } catch {
         return false;
       }
@@ -116,6 +146,40 @@ class Survey extends LitElement {
     const stored = this._readStoredAnswers();
     this._answers = { ...stored };
     this._currentIndex = this._indexFromStoredAnswers(this._answers);
+    this._persistCategoryScores(this._answers);
+  }
+
+  /**
+   * @param {Record<string, unknown>} answers
+   * @returns {Record<string, number>}
+   */
+  _computeCategoryScores(answers) {
+    const totals = /** @type {Record<string, number>} */ ({});
+    const scores = this.optionScores ?? { A: 0, B: 0, C: 0, D: 0 };
+    for (const q of this.questions) {
+      const id = String(q?.ID ?? '').trim();
+      if (!id) continue;
+      const letter = String(answers[id] ?? '')
+        .trim()
+        .toUpperCase()
+        .charAt(0);
+      if (!['A', 'B', 'C', 'D'].includes(letter)) continue;
+      const catRaw = String(q?.Category ?? 'Uncategorized').trim();
+      const cat = catRaw || 'Uncategorized';
+      const pts = scores[letter] ?? 0;
+      totals[cat] = (totals[cat] ?? 0) + pts;
+    }
+    return totals;
+  }
+
+  /** @param {Record<string, unknown>} answers */
+  _persistCategoryScores(answers) {
+    try {
+      const totals = this._computeCategoryScores(answers);
+      sessionStorage.setItem(SURVEY_CATEGORY_SCORES_KEY, JSON.stringify(totals));
+    } catch {
+      /* ignore quota / private mode */
+    }
   }
 
   async _selectOption(letter) {
@@ -257,10 +321,12 @@ export default async function init(el) {
   if (!resp.ok) return;
   const json = await resp.json();
 
-  const raw = Array.isArray(json.data) ? json.data : [];
+  const raw = normalizeQuestionsArray(json);
   const filtered = raw.filter(isValidSurveyQuestion);
+  const optionScores = buildOptionScoresMap(json.score?.data);
 
   const cmp = document.createElement('survey-questions');
   cmp.questions = filtered;
+  cmp.optionScores = optionScores;
   el.append(cmp);
 }

@@ -694,6 +694,21 @@ body.survey-demo-page.survey-demo--show-survey main > .section.survey .block {
   min-height: 0;
 }
 
+/* Completed quiz result: full-viewport dark shell for summary-columns block */
+.section.summary-screen {
+  background: #0a0a0a;
+  color: #fff;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(24px, 5vw, 56px) clamp(20px, 4vw, 48px);
+  box-sizing: border-box;
+}
+
+.section.summary-screen .summary-columns {
+  max-width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
 main {
   ul,
   ol {

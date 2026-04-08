@@ -36,12 +36,19 @@ function createApiLoadingUI(message) {
 /** @type {Map<string, object> | null} */
 let surveyQuestionsById = null;
 
+/** Match [blocks/survey/survey.js](blocks/survey/survey.js): flat `data` or multi-sheet `data.data`. */
+function normalizeSurveyQuestionsFromJson(json) {
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.data?.data)) return json.data.data;
+  return [];
+}
+
 /** @returns {Promise<Map<string, object>>} */
 async function loadSurveyDefinition() {
   const res = await fetch(SURVEY_JSON_URL);
   if (!res.ok) throw new Error(`Survey HTTP ${res.status}`);
   const json = await res.json();
-  const data = Array.isArray(json?.data) ? json.data : [];
+  const data = normalizeSurveyQuestionsFromJson(json);
   const map = new Map();
   for (const q of data) {
     const id = String(q?.ID ?? '').trim();

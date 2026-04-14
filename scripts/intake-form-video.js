@@ -1,5 +1,5 @@
-const INTAKE_SPARKLE_VIDEO_URL =
-  'https://publish-p124903-e1367755.adobeaemcloud.com/content/dam/ai-assessment/sparkle%20animation%20op4.mp4';
+const INTAKE_SPARKLE_VIDEO_URL = 'https://engage.adobe.com/rs/360-KCI-804/images/Agentic-Maturity-Diagnostic-animation.mp4?version=0'
+  // 'https://publish-p124903-e1367755.adobeaemcloud.com/content/dam/ai-assessment/sparkle%20animation%20op4.mp4';
 
 const SPARKLE_SECTION_SELECTOR = 'main .section.intake-form, main .section.start-screen';
 

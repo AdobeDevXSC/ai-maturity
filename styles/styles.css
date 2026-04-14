@@ -1,10 +1,17 @@
 * {
-  font-family:"adobe-clean";
+  font-family: "adobe-clean";
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
 }
- 
+
+.survey-demo--show-start .intake-form,
+.survey-demo--show-start .survey,
+.survey-demo--show-form .start-screen,
+.survey-demo--show-start .survey {
+  display: none !important;
+}
+
 h1,
 .h1,
 h2,
@@ -19,36 +26,46 @@ h6,
 .h6 {
   font-family: "adobe-clean-display";
 }
-body.survey-demo-page.survey-demo--show-form main > .section.start-screen {
+
+body.survey-demo-page.survey-demo--show-form main>.section.start-screen {
   display: none;
   opacity: 0;
- }
-.section.start-screen h1, .section.intake-form .default-content  h1 {
-font-weight: 900;
-font-size: 60px;
-line-height: 95%;
-letter-spacing: 0%;
-
 }
-.section.start-screen h1 + p , .section.intake-form h1 + p { 
-font-weight: 700;
-font-size: 18px;
-line-height: 24px;
-width: 80%;
-padding: 20px 0px 20px 0px;
+
+.section.start-screen h1,
+.section.intake-form .default-content h1 {
+  font-weight: 900;
+  font-size: 60px;
+  line-height: 95%;
+  letter-spacing: 0%;
 
 }
 
-.section.intake-form .block-content + div.default-content {
-     border-bottom: 1px solid #909090;
-    padding-top: 15px;
-    padding-bottom: 30px;
-    margin-bottom: 15px;
+.section.start-screen h1+p,
+.section.intake-form h1+p {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  width: 80%;
+  padding: 20px 0px 20px 0px;
+
 }
-.section.intake-form .block-content + div.default-content p{    font-weight: 400;
-    font-size: 20px;
-    line-height: 1.2; }
-.section.start-screen  .intake-form-video-wrap + .default-content > p:first-of-type, .section.intake-form .intake-form-video-wrap + .default-content > p:first-of-type {  
+
+.section.intake-form .block-content+div.default-content {
+  border-bottom: 1px solid #909090;
+  padding-top: 15px;
+  padding-bottom: 30px;
+  margin-bottom: 15px;
+}
+
+.section.intake-form .block-content+div.default-content p {
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.section.start-screen .intake-form-video-wrap+.default-content>p:first-of-type,
+.section.intake-form .intake-form-video-wrap+.default-content>p:first-of-type {
   /* padding-top: 100px; */
   padding-bottom: 60px;
 }
@@ -58,31 +75,33 @@ padding: 20px 0px 20px 0px;
   min-height: 100dvh;
   justify-content: center;
 }
-.section.start-screen > .default-content a {
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-background-color: #4069FD;
-text-decoration: none;
-padding: 20px 30px;
-border-radius: 35px;
-display: inline-block;
-margin-top: 10px;
+
+.section.start-screen>.default-content a {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  background-color: #4069FD;
+  text-decoration: none;
+  padding: 20px 30px;
+  border-radius: 35px;
+  display: inline-block;
+  margin-top: 10px;
 }
 
-.section.start-screen > .default-content a:hover {
+.section.start-screen>.default-content a:hover {
   filter: brightness(1.08);
 }
-.form-wrap--intake  {
-  padding: 0px!important;
+
+.form-wrap--intake {
+  padding: 0px !important;
 }
 
 
 
 body {
   margin: 0;
- 
+
   &.no-header {
     --header-height: 0;
     margin: 0;
@@ -103,7 +122,7 @@ a {
 .section {
   display: block;
 
-  > .default-content {
+  >.default-content {
     max-width: var(--grid-container-width);
     margin: 0 auto;
   }
@@ -136,21 +155,22 @@ a {
   object-position: right center;
 }
 
-.section.intake-form > .default-content,
-.section.intake-form > .block-content,
-.section.start-screen > .default-content {
+.section.intake-form>.default-content,
+.section.intake-form>.block-content,
+.section.start-screen>.default-content {
   position: relative;
   z-index: 1;
 }
 
-  /* Stacked start → intake → survey: one video per layer, clipped to each section */
-  
+/* Stacked start → intake → survey: one video per layer, clipped to each section */
 
-  body.survey-demo-page.intake-form-page-video .intake-form-video {
-    object-fit: contain;
-  }
+
+body.survey-demo-page.intake-form-page-video .intake-form-video {
+  object-fit: contain;
+}
+
 /* Desktop: full-viewport video behind the entire page (single-section flows only) */
-@media (width >= 900px) {
+@media (width >=900px) {
   body.intake-form-page-video:not(.survey-demo-page) .intake-form-video-wrap {
     position: fixed;
     inset: 0;
@@ -180,14 +200,14 @@ a {
 }
 
 
-.section.intake-form > .default-content picture,
-.section.start-screen > .default-content picture {
+.section.intake-form>.default-content picture,
+.section.start-screen>.default-content picture {
   display: block;
   line-height: 0;
 }
 
-.section.intake-form > .default-content img,
-.section.start-screen > .default-content img {
+.section.intake-form>.default-content img,
+.section.start-screen>.default-content img {
   width: auto;
   max-width: min(200px, 100%);
   height: auto;
@@ -207,28 +227,22 @@ body.survey-demo-page main {
 }
 
 /* Hidden until body gets a visibility modifier (set in survey-demo.js) */
-body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
-  main
-  > .section.intake-form,
-body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
-  main
-  > .section.survey,
-body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey)
-  main
-  > .section.start-screen {
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey) main>.section.intake-form,
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey) main>.section.survey,
+body.survey-demo-page:not(.survey-demo--show-start):not(.survey-demo--show-form):not(.survey-demo--show-survey) main>.section.start-screen {
   display: none;
 }
 
 /* All layers mounted and full-viewport; visibility via opacity + z-index */
 /* body.survey-demo-page.survey-demo--show-start main > .section.start-screen, */
-body.survey-demo-page.survey-demo--show-start main > .section.intake-form,
-body.survey-demo-page.survey-demo--show-start main > .section.survey,
-body.survey-demo-page.survey-demo--show-form main > .section.start-screen,
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form,
-body.survey-demo-page.survey-demo--show-form main > .section.survey,
-body.survey-demo-page.survey-demo--show-survey main > .section.start-screen,
-body.survey-demo-page.survey-demo--show-survey main > .section.intake-form,
-body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+body.survey-demo-page.survey-demo--show-start main>.section.intake-form,
+body.survey-demo-page.survey-demo--show-start main>.section.survey,
+body.survey-demo-page.survey-demo--show-form main>.section.start-screen,
+body.survey-demo-page.survey-demo--show-form main>.section.intake-form,
+body.survey-demo-page.survey-demo--show-form main>.section.survey,
+body.survey-demo-page.survey-demo--show-survey main>.section.start-screen,
+body.survey-demo-page.survey-demo--show-survey main>.section.intake-form,
+body.survey-demo-page.survey-demo--show-survey main>.section.survey {
   position: absolute;
   left: 0;
   right: 0;
@@ -239,7 +253,8 @@ body.survey-demo-page.survey-demo--show-survey main > .section.survey {
   box-sizing: border-box;
   transition: opacity 0.55s ease;
 }
-body.survey-demo-page.survey-demo--show-start main > .section.start-screen {
+
+body.survey-demo-page.survey-demo--show-start main>.section.start-screen {
   z-index: 3;
   opacity: 1;
   pointer-events: auto;
@@ -248,7 +263,7 @@ body.survey-demo-page.survey-demo--show-start main > .section.start-screen {
   background: #000;
 }
 
-body.survey-demo-page.survey-demo--show-start main > .section.intake-form {
+body.survey-demo-page.survey-demo--show-start main>.section.intake-form {
   z-index: 2;
   opacity: 0;
   pointer-events: none;
@@ -260,7 +275,7 @@ body.survey-demo-page.survey-demo--show-start main > .section.intake-form {
 
 
 
-body.survey-demo-page.survey-demo--show-start main > .section.survey {
+body.survey-demo-page.survey-demo--show-start main>.section.survey {
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -273,7 +288,7 @@ body.survey-demo-page.survey-demo--show-start main > .section.survey {
 }
 
 /* Intake on top while showing form */
-body.survey-demo-page.survey-demo--show-form main > .section.start-screen {
+body.survey-demo-page.survey-demo--show-form main>.section.start-screen {
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -282,7 +297,7 @@ body.survey-demo-page.survey-demo--show-form main > .section.start-screen {
   background: #000;
 }
 
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
+body.survey-demo-page.survey-demo--show-form main>.section.intake-form {
   z-index: 2;
   opacity: 1;
   pointer-events: auto;
@@ -292,7 +307,7 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form {
   justify-content: center;
 }
 
-body.survey-demo-page.survey-demo--show-form main > .section.survey {
+body.survey-demo-page.survey-demo--show-form main>.section.survey {
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -305,7 +320,7 @@ body.survey-demo-page.survey-demo--show-form main > .section.survey {
 }
 
 /* Survey on top after intake submit */
-body.survey-demo-page.survey-demo--show-survey main > .section.start-screen {
+body.survey-demo-page.survey-demo--show-survey main>.section.start-screen {
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -314,7 +329,7 @@ body.survey-demo-page.survey-demo--show-survey main > .section.start-screen {
   background: #000;
 }
 
-body.survey-demo-page.survey-demo--show-survey main > .section.intake-form {
+body.survey-demo-page.survey-demo--show-survey main>.section.intake-form {
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -323,7 +338,7 @@ body.survey-demo-page.survey-demo--show-survey main > .section.intake-form {
   background: #292929;
 }
 
-body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+body.survey-demo-page.survey-demo--show-survey main>.section.survey {
   z-index: 2;
   opacity: 1;
   pointer-events: auto;
@@ -336,27 +351,28 @@ body.survey-demo-page.survey-demo--show-survey main > .section.survey {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.survey-demo-page.survey-demo--show-start main > .section.start-screen,
-  body.survey-demo-page.survey-demo--show-start main > .section.intake-form,
-  body.survey-demo-page.survey-demo--show-start main > .section.survey,
-  body.survey-demo-page.survey-demo--show-form main > .section.start-screen,
-  body.survey-demo-page.survey-demo--show-form main > .section.intake-form,
-  body.survey-demo-page.survey-demo--show-form main > .section.survey,
-  body.survey-demo-page.survey-demo--show-survey main > .section.start-screen,
-  body.survey-demo-page.survey-demo--show-survey main > .section.intake-form,
-  body.survey-demo-page.survey-demo--show-survey main > .section.survey {
+
+  body.survey-demo-page.survey-demo--show-start main>.section.start-screen,
+  body.survey-demo-page.survey-demo--show-start main>.section.intake-form,
+  body.survey-demo-page.survey-demo--show-start main>.section.survey,
+  body.survey-demo-page.survey-demo--show-form main>.section.start-screen,
+  body.survey-demo-page.survey-demo--show-form main>.section.intake-form,
+  body.survey-demo-page.survey-demo--show-form main>.section.survey,
+  body.survey-demo-page.survey-demo--show-survey main>.section.start-screen,
+  body.survey-demo-page.survey-demo--show-survey main>.section.intake-form,
+  body.survey-demo-page.survey-demo--show-survey main>.section.survey {
     transition-duration: 0.01ms;
   }
 }
 
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .block-content {
-  
+body.survey-demo-page.survey-demo--show-form main>.section.intake-form>.block-content {
+
   width: auto;
   padding-top: 10px;
   box-sizing: border-box;
 }
 
-body.survey-demo-page.survey-demo--show-survey main > .section.survey > .block-content {
+body.survey-demo-page.survey-demo--show-survey main>.section.survey>.block-content {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -364,8 +380,8 @@ body.survey-demo-page.survey-demo--show-survey main > .section.survey > .block-c
   width: 100%;
 }
 
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form .block,
-body.survey-demo-page.survey-demo--show-survey main > .section.survey .block {
+body.survey-demo-page.survey-demo--show-form main>.section.intake-form .block,
+body.survey-demo-page.survey-demo--show-survey main>.section.survey .block {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -388,6 +404,7 @@ body.survey-demo-page.survey-demo--show-survey main > .section.survey .block {
 }
 
 main {
+
   ul,
   ol {
     padding-inline-start: 24px;
@@ -428,13 +445,13 @@ svg {
 
 
 
-@media (width >= 1440px) {
+@media (width >=1440px) {
   :root {
     --grid-container-width: 1200px;
   }
 }
 
-main > div,
+main>div,
 .has-template,
 div[data-status] {
   display: none;
@@ -447,37 +464,59 @@ aem-sidekick {
     opacity: 1;
   }
 }
- 
+
 @media screen and (min-width: 1920px) {
-  .section.start-screen h1, .section.intake-form .default-content  h1 {
+
+  .section.start-screen h1,
+  .section.intake-form .default-content h1 {
     font-size: 100px;
     line-height: 95%;
-    }
-    .section.start-screen h1 + p , .section.intake-form h1 + p { 
-    font-size: 26px;line-height: 26px;padding: 23px 0px 60px 0px;
-    }
-    .section.start-screen > .default-content a {font-size: 28px;
-        line-height: 100%;
-      }
-    
-    .section.intake-form > .default-content, .section.intake-form >  .block-content, .section.start-screen > .default-content {
-        max-width: 760px;
-      }
-     
+  }
+
+  .section.start-screen h1+p,
+  .section.intake-form h1+p {
+    font-size: 26px;
+    line-height: 26px;
+    padding: 23px 0px 60px 0px;
+  }
+
+  .section.start-screen>.default-content a {
+    font-size: 28px;
+    line-height: 100%;
+  }
+
+  .section.intake-form>.default-content,
+  .section.intake-form>.block-content,
+  .section.start-screen>.default-content {
+    max-width: 760px;
+  }
+
 }
-.section.intake-form > .default-content, .section.intake-form >  .block-content, .section.start-screen > .default-content {max-width: 100%;margin: 0px 30px 0px;}
+
+.section.intake-form>.default-content,
+.section.intake-form>.block-content,
+.section.start-screen>.default-content {
+  max-width: 100%;
+  margin: 0px 30px 0px;
+}
 
 @media screen and (min-width: 1266px) {
   body.survey-demo-page {
-  overflow: hidden;
-}
-body.survey-demo-page.survey-demo--show-start main > .section.start-screen { padding-left: 118px;}
+    overflow: hidden;
+  }
+
+  body.survey-demo-page.survey-demo--show-start main>.section.start-screen {
+    padding-left: 118px;
+  }
 
 
-.section.intake-form > .default-content, .section.intake-form >  .block-content, .section.start-screen > .default-content {
-  max-width: 660px;
-  margin: 0px;
-}
+  .section.intake-form>.default-content,
+  .section.intake-form>.block-content,
+  .section.start-screen>.default-content {
+    max-width: 660px;
+    margin: 0px;
+  }
+
   body.survey-demo-page.intake-form-page-video .intake-form-video-wrap {
     position: absolute;
     inset: 0;
@@ -487,21 +526,64 @@ body.survey-demo-page.survey-demo--show-start main > .section.start-screen { pad
     min-height: 0;
     z-index: 0;
   }
-  .section.intake-form div.default-content  {margin-left: 118px; margin-right: 0px;}
 
-body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .block-content {
-  margin-left: 118px; margin-right: 0px;max-width: 660px;}
+  .section.intake-form div.default-content {
+    margin-left: 118px;
+    margin-right: 0px;
+  }
+
+  body.survey-demo-page.survey-demo--show-form main>.section.intake-form>.block-content {
+    margin-left: 118px;
+    margin-right: 0px;
+    max-width: 660px;
+  }
 }
+
 @media screen and (max-width: 1265px) {
-  .section.start-screen > .default-content a {
+  .section.start-screen>.default-content a {
     margin-bottom: 50px;
   }
+
   .intake-form-video-wrap {
-  order: 3;
+    order: 3;
   }
-  .section.start-screen .intake-form-video-wrap + .default-content, .section.intake-form .intake-form-video-wrap + .default-content {margin-top: 50px;}
+
+  .section.start-screen .intake-form-video-wrap+.default-content,
+  .section.intake-form .intake-form-video-wrap+.default-content {
+    margin-top: 50px;
+  }
+
   .section.intake-form .form {
     margin-bottom: 50px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+
+  .section.start-screen .intake-form-video-wrap+.default-content>p:first-of-type,
+  .section.intake-form .intake-form-video-wrap+.default-content>p:first-of-type {
+    padding-bottom: 30px;
+  }
+
+  .section.start-screen h1,
+  .section.intake-form .default-content h1 {
+    font-size: 40px;
+    line-height: 45px;
+  }
+
+  .section.intake-form .block-content+div.default-content p {
+    font-size: 18px;
+    line-height: 26px;
+  }
+
+  .section.intake-form .block-content+div.default-content {
+    padding-top: 0px;
+  }
+
+  .section.start-screen h1+p,
+  .section.intake-form h1+p {
+    font-weight: 400;
+    width: 100%;
   }
 }
 
@@ -548,20 +630,20 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
 }
 
 .section.summary-screen .summary-columns .summary-columns-media {
-  height: calc(100vh - calc(230vw / var(--layout-size)));
+  max-height: calc(100vh - calc(230vw / var(--layout-size)));
 }
 
 .section.summary-screen .summary-columns .summary-columns-media video,
 .section.summary-screen .summary-columns .summary-columns-media iframe {
   width: 100%;
-  height: calc(100vh - calc(230vw / var(--layout-size)));
+  max-height: calc(100vh - calc(230vw / var(--layout-size)));
   object-fit: contain;
   object-position: top;
 }
 
 .section.summary-screen .summary-columns .summary-columns-copy {
   overflow: auto;
-  height: calc(100vh - calc(370vw / var(--layout-size)));
+  max-height: calc(100vh - calc(370vw / var(--layout-size)));
   padding-right: calc(10vw / var(--layout-size));
 }
 
@@ -620,6 +702,66 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
   line-height: 1.35;
 }
 
+/* 324324 */
+.section.summary-screen .summary-columns .summary-columns-copy {
+  position: relative;
+}
+
+.section.summary-screen .summary-columns .summary-columns-copy img {
+  max-width: calc(124vw / var(--layout-size));
+  margin-top: calc(30vw / var(--layout-size));
+  float: left;
+  display: block;
+}
+
+.section.summary-screen .summary-columns .summary-columns-copy ul,
+.section.summary-screen .summary-columns .summary-columns-copy ol {
+  padding-bottom: calc(16vw / var(--layout-size));
+  padding-left: calc(30vw / var(--layout-size));
+}
+
+.section.summary-screen .summary-columns .summary-columns-copy li {
+  font-size: calc(20vw / var(--layout-size));
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.section.summary-screen .summary-columns .summary-columns-copy p:nth-last-child(1) {
+  padding-left: calc(140vw / var(--layout-size));
+  margin: calc(60vw / var(--layout-size)) 0 0 0;
+  font-size: calc(24vw / var(--layout-size));
+  font-weight: 800;
+  max-width: calc(332vw / var(--layout-size));
+  line-height: normal;
+}
+
+.section.summary-screen .summary-columns .summary-columns-media h2 {
+  font-size: calc(35vw / var(--layout-size));
+  max-width: calc(750vw / var(--layout-size));
+}
+
+.section.summary-screen .summary-columns .summary-columns-media p:nth-child(2) {
+  font-size: calc(20vw / var(--layout-size));
+  max-width: calc(750vw / var(--layout-size));
+}
+
+.section.summary-screen .summary-columns .summary-columns-media video,
+.section.summary-screen .summary-columns .summary-columns-media iframe {
+  max-height: calc(100vh - 362vw / var(--layout-size));
+  padding-top: calc(30vw / var(--layout-size));
+}
+
+.section.summary-screen .summary-columns .summary-columns-copy {
+  height: 100%;
+  max-height: unset;
+}
+
+.section.summary-screen .summary-columns .summary-columns-media {
+  height: 100%;
+  max-height: unset;
+}
+
 @media screen and (max-width:992px) {
 
   .section.summary-screen,
@@ -640,7 +782,9 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
     grid-template-columns: unset;
   }
 
-  .section.summary-screen .summary-columns .summary-columns-copy p {
+  .section.summary-screen .summary-columns .summary-columns-copy p,
+  .section.summary-screen .summary-columns .summary-columns-copy li,
+  .section.summary-screen .summary-columns .summary-columns-media p:nth-child(2) {
     font-size: calc(40vw / var(--layout-size));
   }
 
@@ -651,10 +795,27 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
   .section.summary-screen .summary-columns .summary-columns-copy .summary-columns-title {
     font-size: calc(96vw / var(--layout-size));
   }
+
+  .section.summary-screen .summary-columns .summary-columns-media h2 {
+    font-size: calc(80vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-copy ul,
+  .section.summary-screen .summary-columns .summary-columns-copy ol {
+    padding-left: calc(50vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-media h2,
+  .section.summary-screen .summary-columns .summary-columns-media p:nth-child(2) {
+    max-width: unset;
+  }
 }
 
 @media screen and (max-width:767px) {
-  .section.summary-screen .summary-columns .summary-columns-copy p {
+
+  .section.summary-screen .summary-columns .summary-columns-copy p,
+  .section.summary-screen .summary-columns .summary-columns-copy li,
+  .section.summary-screen .summary-columns .summary-columns-media p:nth-child(2) {
     font-size: calc(40vw / var(--layout-size));
   }
 
@@ -670,12 +831,27 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
     font-size: calc(38vw / var(--layout-size));
   }
 
-  .section.summary-screen .summary-columns .summary-columns-copy p {
+  .section.summary-screen .summary-columns .summary-columns-media h2 {
+    font-size: calc(35vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-copy p,
+  .section.summary-screen .summary-columns .summary-columns-copy li,
+  .section.summary-screen .summary-columns .summary-columns-media p:nth-child(2) {
     font-size: calc(20vw / var(--layout-size));
   }
 
   .section.summary-screen .summary-columns .summary-columns-copy .summary-columns-heading {
     font-size: calc(28vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-copy ul,
+  .section.summary-screen .summary-columns .summary-columns-copy ol {
+    padding-left: calc(40vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-copy {
+    padding-right: 0;
   }
 }
 
@@ -688,7 +864,16 @@ body.survey-demo-page.survey-demo--show-form main > .section.intake-form > .bloc
     font-size: calc(32vw / var(--layout-size));
   }
 
+  .section.summary-screen .summary-columns .summary-columns-media h2 {
+    font-size: calc(28vw / var(--layout-size));
+  }
+
   .section.summary-screen .summary-columns .summary-columns-row {
     padding: calc(40vw / var(--layout-size));
+  }
+
+  .section.summary-screen .summary-columns .summary-columns-copy ul,
+  .section.summary-screen .summary-columns .summary-columns-copy ol {
+    padding-left: calc(30vw / var(--layout-size));
   }
 }

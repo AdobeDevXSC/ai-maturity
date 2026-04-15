@@ -5,12 +5,6 @@
   box-sizing: border-box;
 }
 
-.survey-demo--show-start .intake-form,
-.survey-demo--show-start .survey,
-.survey-demo--show-form .start-screen,
-.survey-demo--show-start .survey {
-  display: none !important;
-}
 
 h1,
 .h1,
@@ -26,7 +20,24 @@ h6,
 .h6 {
   font-family: "adobe-clean-display";
 }
-
+.section.start-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #000;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.section.start-screen .intake-form-video-wrap + .default-content>p:first-of-type,
+.section.intake-form .intake-form-video-wrap + .default-content>p:first-of-type {
+  padding-bottom: 60px;
+}
+.survey-demo--show-start .intake-form,
+.survey-demo--show-start .survey,
+.survey-demo--show-form .start-screen,
+.survey-demo--show-start .survey {
+  display: none !important; 
+}
 body.survey-demo-page.survey-demo--show-form main>.section.start-screen {
   display: none;
   opacity: 0;
@@ -46,7 +57,7 @@ body.survey-demo-page.survey-demo--show-form main>.section.start-screen {
   font-weight: 700;
   font-size: 18px;
   line-height: 24px;
-  width: 80%;
+  
   padding: 20px 0px 20px 0px;
 
 }
@@ -64,17 +75,9 @@ body.survey-demo-page.survey-demo--show-form main>.section.start-screen {
   line-height: 1.2;
 }
 
-.section.start-screen .intake-form-video-wrap+.default-content>p:first-of-type,
-.section.intake-form .intake-form-video-wrap+.default-content>p:first-of-type {
-  /* padding-top: 100px; */
-  padding-bottom: 60px;
-}
 
-.section.start-screen {
-  min-height: 100vh;
-  min-height: 100dvh;
-  justify-content: center;
-}
+
+
 
 .section.start-screen>.default-content a {
   font-weight: 700;
@@ -466,7 +469,7 @@ aem-sidekick {
 }
 
 @media screen and (min-width: 1920px) {
-
+  .section.start-screen .intake-form-video-wrap+.default-content>p:first-of-type, .section.intake-form .intake-form-video-wrap+.default-content>p:first-of-type {padding-bottom: 168px;}
   .section.start-screen h1,
   .section.intake-form .default-content h1 {
     font-size: 100px;
@@ -476,8 +479,8 @@ aem-sidekick {
   .section.start-screen h1+p,
   .section.intake-form h1+p {
     font-size: 26px;
-    line-height: 26px;
-    padding: 23px 0px 60px 0px;
+    line-height: 34px;
+    padding: 23px 0px 30px 0px;
   }
 
   .section.start-screen>.default-content a {
@@ -505,7 +508,7 @@ aem-sidekick {
     overflow: hidden;
   }
 
-  body.survey-demo-page.survey-demo--show-start main>.section.start-screen {
+  .section.start-screen {
     padding-left: 118px;
   }
 
@@ -513,7 +516,7 @@ aem-sidekick {
   .section.intake-form>.default-content,
   .section.intake-form>.block-content,
   .section.start-screen>.default-content {
-    max-width: 660px;
+    max-width: 680px;
     margin: 0px;
   }
 
@@ -535,7 +538,7 @@ aem-sidekick {
   body.survey-demo-page.survey-demo--show-form main>.section.intake-form>.block-content {
     margin-left: 118px;
     margin-right: 0px;
-    max-width: 660px;
+    max-width: 680px;
   }
 }
 

@@ -563,9 +563,6 @@ section.survey .block-content .survey .survey {
     overflow: unset;
   }
 
-  .dots {
-    margin: 0 0 calc(30vw / var(--layout-size)) 0;
-  }
 
   .option {
     font-size: calc(35vw / var(--layout-size));
@@ -580,8 +577,29 @@ section.survey .block-content .survey .survey {
     height: unset;
   }
 
+
+
   body.survey-demo-page.survey-demo--show-survey main>.section.survey {
     min-height: 100vh;
+    position: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+ 
+  .next {
+    padding: calc(15vw / var(--layout-size)) calc(50vw / var(--layout-size));
+    font-size: calc(35vw / var(--layout-size));
+  }
+ 
+  body.survey-demo-page.survey-demo--show-survey main>.section.intake-form,
+  body.survey-demo-page.survey-demo--show-survey main>.section.start-screen {
+    display: none;
+  }
+ 
+  .dots {
+    margin: 0;
+    padding-bottom: calc(40vw / var(--layout-size));
   }
 
 }

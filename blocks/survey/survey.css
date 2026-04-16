@@ -35,7 +35,7 @@ h6,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Section `.section.survey` supplies full-viewport background art */
+  /* `.section.survey` holds injected background video + fallback color in styles.css */
   background: transparent;
   min-height: 100vh;
   min-height: 100dvh;
@@ -44,7 +44,7 @@ h6,
 }
 
 /* Large centered glass panel behind question + options + Next */
-.card {
+/* .card {
   height: calc(100vh - calc(198vw / var(--layout-size)));
   --glass-blur: calc(28vw / var(--layout-size));
   width: 100%;
@@ -62,22 +62,15 @@ h6,
     0 0 0 calc(1vw / var(--layout-size)) rgba(255, 255, 255, 0.06) inset,
     inset 0 calc(1vw / var(--layout-size)) 0 rgba(255, 255, 255, 0.2);
 
-  background:
-    radial-gradient(120% 80% at 0% 50%, rgba(255, 255, 255, 0.35) 0%, transparent 55%),
-    radial-gradient(120% 80% at 100% 50%, rgba(255, 240, 240, 0.28) 0%, transparent 55%),
-    linear-gradient(180deg,
-      rgba(180, 30, 40, 0.45) 0%,
-      rgba(140, 20, 35, 0.38) 45%,
-      rgba(200, 50, 55, 0.32) 100%),
-    rgba(255, 255, 255, 0.12);
+  background: transparent;
 
   backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
-}
+} */
 
 @supports not (backdrop-filter: blur(calc(1vw / var(--layout-size)))) {
-  .card {
-    background: rgba(120, 20, 30, 0.72);
+  .survey .card {
+    background: transparent;
   }
 }
 

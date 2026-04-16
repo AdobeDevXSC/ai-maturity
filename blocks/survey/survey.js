@@ -10,6 +10,63 @@ const INTAKE_FORM_STORAGE_KEY = 'intake-form-data';
 const SURVEY_HOOK_URL =
   'https://hook.fusion.adobe.com/v64d1uyfggdtifqtn2xpp3y2588qpxd7';
 
+/** Full-bleed background for `.section.survey` (see `styles/styles.css`). */
+const SURVEY_BACKGROUND_VIDEO_URL =
+  '/media/video/media_132cbfe60021f6ebd031849d0734011ebfd626864.mp4';
+
+const SURVEY_BG_VIDEO_WRAP_CLASS = 'survey-background-video-wrap';
+const SURVEY_BG_VIDEO_CLASS = 'survey-background-video';
+
+/**
+ * Injects muted looping video behind the survey block and waits until it is preloaded
+ * before callers show questions.
+ * @param {Element | null | undefined} section
+ * @returns {Promise<void>}
+ */
+async function injectAndPreloadSurveyBackground(section) {
+  if (!section || section.querySelector(`.${SURVEY_BG_VIDEO_WRAP_CLASS}`)) return;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = SURVEY_BG_VIDEO_WRAP_CLASS;
+  wrap.setAttribute('aria-hidden', 'true');
+
+  const video = document.createElement('video');
+  video.className = SURVEY_BG_VIDEO_CLASS;
+  video.setAttribute('playsinline', '');
+  video.setAttribute('muted', '');
+  video.setAttribute('preload', 'auto');
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+
+  const source = document.createElement('source');
+  source.src = SURVEY_BACKGROUND_VIDEO_URL;
+  source.type = 'video/mp4';
+  video.append(source);
+
+  wrap.append(video);
+  section.insertBefore(wrap, section.firstChild);
+
+  await new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolve(undefined);
+    };
+    const timeoutId = setTimeout(finish, 15000);
+    video.addEventListener('canplaythrough', finish, { once: true });
+    video.addEventListener('loadeddata', finish, { once: true });
+    video.addEventListener('error', finish, { once: true });
+    video.load();
+  });
+
+  video.play().catch(() => {});
+}
+
 function getIntakeEmail() {
   try {
     const raw = sessionStorage.getItem(INTAKE_FORM_STORAGE_KEY);
@@ -324,6 +381,8 @@ export default async function init(el) {
   const raw = normalizeQuestionsArray(json);
   const filtered = raw.filter(isValidSurveyQuestion);
   const optionScores = buildOptionScoresMap(json.score?.data);
+
+  await injectAndPreloadSurveyBackground(el.closest('.section'));
 
   const cmp = document.createElement('survey-questions');
   cmp.questions = filtered;
